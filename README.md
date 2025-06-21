@@ -15,6 +15,9 @@ LLM URL Solution is a powerful WordPress plugin that turns 404 errors from AI ch
 
 AI chatbots like ChatGPT are a rapidly growing source of referral traffic. But what happens when they "hallucinate" and link to pages on your site that don't exist? You get a stream of 404 errors from highly-qualified visitors who were looking for specific information.
 
+<img width="618" alt="image" src="https://github.com/user-attachments/assets/9f40e4a6-b04f-45f9-9065-d5ad157f0f2c" />
+
+
 Each of these 404s represents a missed opportunity to engage a user and provide value. LLM URL Solution was built to solve this exact problem by turning these AI-generated 404s into SEO-optimized content automatically based on existing content on your site and blog.
 
 ### Key Features
