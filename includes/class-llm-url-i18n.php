@@ -37,4 +37,4 @@ class LLM_URL_i18n {
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);
 	}
-} 
+}

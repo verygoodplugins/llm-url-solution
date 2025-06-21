@@ -44,9 +44,9 @@ class LLM_URL_Content_Generator {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		$this->db = new LLM_URL_Database();
+		$this->db       = new LLM_URL_Database();
 		$this->analyzer = new LLM_URL_Analyzer();
-		
+
 		// Register the scheduled event handler
 		add_action( 'llm_url_solution_generate_content', array( $this, 'process_scheduled_generation' ) );
 	}
@@ -55,13 +55,17 @@ class LLM_URL_Content_Generator {
 	 * Generate content for a 404 log entry.
 	 *
 	 * @since    1.0.0
-	 * @param    int    $log_id    The log ID.
+	 * @param    int $log_id    The log ID.
 	 * @return   array             Result array with success status and message.
 	 */
 	public function generate_content_for_log( $log_id ) {
+		// Update status to generating
+		$this->db->update_generation_status( $log_id, 'generating', 'Starting content generation' );
+
 		// Get the log entry
 		$log = $this->db->get_404_log( $log_id );
 		if ( ! $log ) {
+			$this->db->update_generation_status( $log_id, 'failed', 'Log entry not found' );
 			return array(
 				'success' => false,
 				'message' => __( 'Log entry not found.', 'llm-url-solution' ),
@@ -70,6 +74,7 @@ class LLM_URL_Content_Generator {
 
 		// Check if already processed
 		if ( $log->processed ) {
+			$this->db->update_generation_status( $log_id, 'failed', 'Already processed' );
 			return array(
 				'success' => false,
 				'message' => __( 'This log has already been processed.', 'llm-url-solution' ),
@@ -79,6 +84,7 @@ class LLM_URL_Content_Generator {
 		// Check rate limits
 		$rate_check = $this->db->check_rate_limits();
 		if ( ! $rate_check['allowed'] ) {
+			$this->db->update_generation_status( $log_id, 'failed', $rate_check['message'] );
 			return array(
 				'success' => false,
 				'message' => $rate_check['message'],
@@ -86,12 +92,14 @@ class LLM_URL_Content_Generator {
 		}
 
 		// Analyze the URL
+		$this->db->update_generation_status( $log_id, 'generating', 'Analyzing URL' );
 		$analysis = $this->analyzer->analyze_url( $log->url_slug );
-		
+
 		// Check confidence threshold
 		$min_confidence = (float) get_option( 'llm_url_solution_min_confidence', 0.3 );
 		if ( $analysis['confidence'] < $min_confidence ) {
 			$this->db->mark_as_processed( $log_id );
+			$this->db->update_generation_status( $log_id, 'failed', 'Confidence too low: ' . ( $analysis['confidence'] * 100 ) . '%' );
 			return array(
 				'success' => false,
 				'message' => __( 'URL analysis confidence too low.', 'llm-url-solution' ),
@@ -99,24 +107,29 @@ class LLM_URL_Content_Generator {
 		}
 
 		// Search for related content
+		$this->db->update_generation_status( $log_id, 'generating', 'Searching for related content' );
 		$related_content = $this->analyzer->search_related_content( $analysis['keywords'], 5 );
-		
+
 		// Build context for AI
 		$context = $this->build_generation_context( $analysis, $related_content );
-		
+
 		// Generate content
+		$this->db->update_generation_status( $log_id, 'generating', 'Calling AI API' );
 		$generated = $this->call_ai_api( $context );
-		
+
 		if ( ! $generated['success'] ) {
 			$this->db->mark_as_processed( $log_id );
+			$this->db->update_generation_status( $log_id, 'failed', 'AI generation failed: ' . $generated['message'] );
 			return $generated;
 		}
 
 		// Create the post
+		$this->db->update_generation_status( $log_id, 'generating', 'Creating post' );
 		$post_id = $this->create_post( $generated['content'], $analysis, $log );
-		
+
 		if ( is_wp_error( $post_id ) ) {
 			$this->db->mark_as_processed( $log_id );
+			$this->db->update_generation_status( $log_id, 'failed', 'Post creation failed: ' . $post_id->get_error_message() );
 			return array(
 				'success' => false,
 				'message' => $post_id->get_error_message(),
@@ -125,6 +138,7 @@ class LLM_URL_Content_Generator {
 
 		// Mark as processed and link to post
 		$this->db->mark_as_processed( $log_id, $post_id );
+		$this->db->update_generation_status( $log_id, 'success', 'Content generated successfully' );
 
 		// Trigger action for other plugins
 		do_action( 'llm_url_solution_content_generated', $post_id, $log_id, $analysis );
@@ -140,8 +154,8 @@ class LLM_URL_Content_Generator {
 	 * Build context for AI generation.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $analysis          URL analysis results.
-	 * @param    array    $related_content   Related content found.
+	 * @param    array $analysis          URL analysis results.
+	 * @param    array $related_content   Related content found.
 	 * @return   array                       Context array.
 	 */
 	private function build_generation_context( $analysis, $related_content ) {
@@ -172,19 +186,19 @@ class LLM_URL_Content_Generator {
 	 * Call AI API to generate content.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $context    Generation context.
+	 * @param    array $context    Generation context.
 	 * @return   array                Result array.
 	 */
 	private function call_ai_api( $context ) {
 		$ai_model = get_option( 'llm_url_solution_ai_model', 'gpt-4' );
-		
+
 		// Determine which API to use
 		if ( strpos( $ai_model, 'gpt' ) !== false || strpos( $ai_model, 'openai' ) !== false ) {
 			return $this->call_openai_api( $context );
 		} elseif ( strpos( $ai_model, 'claude' ) !== false ) {
 			return $this->call_claude_api( $context );
 		}
-		
+
 		return array(
 			'success' => false,
 			'message' => __( 'Invalid AI model selected.', 'llm-url-solution' ),
@@ -195,7 +209,7 @@ class LLM_URL_Content_Generator {
 	 * Call OpenAI API.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $context    Generation context.
+	 * @param    array $context    Generation context.
 	 * @return   array                Result array.
 	 */
 	private function call_openai_api( $context ) {
@@ -208,7 +222,7 @@ class LLM_URL_Content_Generator {
 		}
 
 		$prompt = $this->build_prompt( $context );
-		
+
 		$request_body = array(
 			'model'       => get_option( 'llm_url_solution_ai_model', 'gpt-4' ),
 			'messages'    => array(
@@ -262,7 +276,7 @@ class LLM_URL_Content_Generator {
 		}
 
 		$content = $this->parse_ai_response( $data['choices'][0]['message']['content'] );
-		
+
 		return array(
 			'success' => true,
 			'content' => $content,
@@ -273,7 +287,7 @@ class LLM_URL_Content_Generator {
 	 * Call Claude API.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $context    Generation context.
+	 * @param    array $context    Generation context.
 	 * @return   array                Result array.
 	 */
 	private function call_claude_api( $context ) {
@@ -286,7 +300,7 @@ class LLM_URL_Content_Generator {
 		}
 
 		$prompt = $this->build_prompt( $context );
-		
+
 		$request_body = array(
 			'model'      => 'claude-3-opus-20240229',
 			'messages'   => array(
@@ -337,7 +351,7 @@ class LLM_URL_Content_Generator {
 		}
 
 		$content = $this->parse_ai_response( $data['content'][0]['text'] );
-		
+
 		return array(
 			'success' => true,
 			'content' => $content,
@@ -358,32 +372,35 @@ class LLM_URL_Content_Generator {
 	 * Build the main prompt for AI.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $context    Generation context.
+	 * @param    array $context    Generation context.
 	 * @return   string               The prompt.
 	 */
 	private function build_prompt( $context ) {
 		$analysis = $context['url_analysis'];
 		$settings = $context['content_settings'];
-		
-		$prompt = sprintf(
-			__( 'Generate a %s about "%s" based on the URL slug: %s
 
-Keywords identified: %s
-Content type: %s
-User intent: %s
+		$prompt = sprintf(
+			__(
+				'Generate a %1$s about "%2$s" based on the URL slug: %3$s
+
+Keywords identified: %4$s
+Content type: %5$s
+User intent: %6$s
 
 Requirements:
-- Length: %d to %d words
-- Tone: %s
-- Include practical examples: %s
-- Include code snippets if relevant: %s
+- Length: %7$d to %8$d words
+- Tone: %9$s
+- Include practical examples: %10$s
+- Include code snippets if relevant: %11$s
 - SEO-optimized with proper heading structure
 - Engaging introduction and conclusion
 - Format with HTML tags
 
 Site context:
-- Site name: %s
-- Site description: %s', 'llm-url-solution' ),
+- Site name: %12$s
+- Site description: %13$s',
+				'llm-url-solution'
+			),
 			$analysis['content_type'],
 			$analysis['topic'],
 			$analysis['original_slug'],
@@ -409,17 +426,20 @@ Site context:
 
 		// Add custom instructions
 		if ( ! empty( $context['custom_instructions'] ) ) {
-			$prompt .= "\n\n" . __( 'Additional instructions:', 'llm-url-solution' ) . " " . $context['custom_instructions'];
+			$prompt .= "\n\n" . __( 'Additional instructions:', 'llm-url-solution' ) . ' ' . $context['custom_instructions'];
 		}
 
-		$prompt .= "\n\n" . __( 'Return the content in the following JSON format:
+		$prompt .= "\n\n" . __(
+			'Return the content in the following JSON format:
 {
   "title": "SEO-optimized title",
   "content": "Full HTML content",
   "excerpt": "Brief excerpt/meta description",
   "tags": ["tag1", "tag2", "tag3"],
   "focus_keyword": "main SEO keyword"
-}', 'llm-url-solution' );
+}',
+			'llm-url-solution'
+		);
 
 		return apply_filters( 'llm_url_solution_ai_prompt', $prompt, $context );
 	}
@@ -428,7 +448,7 @@ Site context:
 	 * Parse AI response.
 	 *
 	 * @since    1.0.0
-	 * @param    string    $response    Raw AI response.
+	 * @param    string $response    Raw AI response.
 	 * @return   array                  Parsed content array.
 	 */
 	private function parse_ai_response( $response ) {
@@ -460,16 +480,20 @@ Site context:
 	 * Create a WordPress post from generated content.
 	 *
 	 * @since    1.0.0
-	 * @param    array     $content     Generated content.
-	 * @param    array     $analysis    URL analysis.
-	 * @param    object    $log         404 log entry.
+	 * @param    array  $content     Generated content.
+	 * @param    array  $analysis    URL analysis.
+	 * @param    object $log         404 log entry.
 	 * @return   int|WP_Error           Post ID or error.
 	 */
 	private function create_post( $content, $analysis, $log ) {
-		// Detect post type based on URL structure
+		// Detect post type based on URL structure.
 		$detected_post_type = $this->detect_post_type_from_url( $log->requested_url );
-		
-		// Prepare post data
+
+		// Determine slug from the last part of the URL path.
+		$path = wp_parse_url( $log->requested_url, PHP_URL_PATH );
+		$slug = basename( $path );
+
+		// Prepare post data.
 		$post_data = array(
 			'post_title'   => sanitize_text_field( $content['title'] ),
 			'post_content' => wp_kses_post( $content['content'] ),
@@ -478,19 +502,19 @@ Site context:
 			'post_type'    => $detected_post_type ?: get_option( 'llm_url_solution_default_post_type', 'post' ),
 			'post_author'  => get_current_user_id() ?: 1,
 			'meta_input'   => array(
-				'_llm_url_solution_generated'     => true,
-				'_llm_url_solution_log_id'        => $log->id,
-				'_llm_url_solution_original_url'  => $log->requested_url,
+				'_llm_url_solution_generated'      => true,
+				'_llm_url_solution_log_id'         => $log->id,
+				'_llm_url_solution_original_url'   => $log->requested_url,
 				'_llm_url_solution_generated_date' => current_time( 'mysql' ),
 			),
 		);
 
-		// Set the slug to match the original URL
-		$post_data['post_name'] = $analysis['original_slug'];
+		// Set the slug to match the last part of the original URL.
+		$post_data['post_name'] = sanitize_title( $slug );
 
-		// Insert the post
+		// Insert the post.
 		$post_id = wp_insert_post( $post_data, true );
-		
+
 		if ( is_wp_error( $post_id ) ) {
 			return $post_id;
 		}
@@ -500,8 +524,9 @@ Site context:
 			wp_set_post_tags( $post_id, $content['tags'] );
 		}
 
-		// Auto-categorize
+		// Auto-categorize - pass the original URL from the log
 		if ( get_option( 'llm_url_solution_auto_categorize', true ) ) {
+			$analysis['original_url'] = $log->requested_url;
 			$this->auto_categorize_post( $post_id, $analysis );
 		}
 
@@ -517,22 +542,35 @@ Site context:
 	/**
 	 * Detect post type from URL structure based on taxonomy terms.
 	 *
-	 * @since    1.0.0
-	 * @param    string    $url    The requested URL.
+	 * @since    1.1.0
+	 * @param    string $url    The requested URL.
 	 * @return   string|null       The detected post type or null.
 	 */
 	private function detect_post_type_from_url( $url ) {
 		// Parse the URL to get the path
 		$parsed = wp_parse_url( $url );
-		$path = isset( $parsed['path'] ) ? trim( $parsed['path'], '/' ) : '';
-		
+		$path   = isset( $parsed['path'] ) ? trim( $parsed['path'], '/' ) : '';
+
 		// Split the path into segments
 		$segments = explode( '/', $path );
-		
+
 		if ( empty( $segments ) ) {
 			return null;
 		}
-		
+
+		// Custom logic for WP Fusion site
+		$site_url = get_site_url();
+		if ( strpos( $site_url, 'wpfusion.com' ) !== false ) {
+			// Check if URL contains /documentation/
+			if ( strpos( $path, 'documentation/' ) !== false ) {
+				return 'documentation';
+			} else {
+				// For all other URLs, use post type
+				return 'post';
+			}
+		}
+
+		// Original logic for other sites - check taxonomy terms
 		// Check first segment
 		if ( isset( $segments[0] ) && ! empty( $segments[0] ) ) {
 			$post_type = $this->check_taxonomy_term_for_post_type( $segments[0] );
@@ -540,7 +578,7 @@ Site context:
 				return $post_type;
 			}
 		}
-		
+
 		// Check second segment if first didn't match
 		if ( isset( $segments[1] ) && ! empty( $segments[1] ) ) {
 			$post_type = $this->check_taxonomy_term_for_post_type( $segments[1] );
@@ -548,7 +586,7 @@ Site context:
 				return $post_type;
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -556,21 +594,21 @@ Site context:
 	 * Check if a slug is a taxonomy term and return associated post type.
 	 *
 	 * @since    1.0.0
-	 * @param    string    $slug    The slug to check.
+	 * @param    string $slug    The slug to check.
 	 * @return   string|null        The associated post type or null.
 	 */
 	private function check_taxonomy_term_for_post_type( $slug ) {
 		// Get all public taxonomies
 		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
-		
+
 		foreach ( $taxonomies as $taxonomy ) {
 			// Check if term exists in this taxonomy
 			$term = get_term_by( 'slug', $slug, $taxonomy->name );
-			
+
 			if ( $term ) {
 				// Get post types associated with this taxonomy
 				$post_types = $taxonomy->object_type;
-				
+
 				// Return the first non-attachment post type
 				foreach ( $post_types as $post_type ) {
 					if ( $post_type !== 'attachment' ) {
@@ -579,7 +617,7 @@ Site context:
 				}
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -587,10 +625,72 @@ Site context:
 	 * Auto-categorize a post based on analysis.
 	 *
 	 * @since    1.0.0
-	 * @param    int      $post_id     The post ID.
-	 * @param    array    $analysis    URL analysis.
+	 * @param    int   $post_id     The post ID.
+	 * @param    array $analysis    URL analysis.
 	 */
 	private function auto_categorize_post( $post_id, $analysis ) {
+		// Get the post type
+		$post_type = get_post_type( $post_id );
+
+		// Custom logic for WP Fusion site
+		$site_url = get_site_url();
+		if ( strpos( $site_url, 'wpfusion.com' ) !== false ) {
+			// Parse the original URL to get segments
+			$parsed   = wp_parse_url( $analysis['original_url'] ?? '' );
+			$path     = isset( $parsed['path'] ) ? trim( $parsed['path'], '/' ) : '';
+			$segments = explode( '/', $path );
+
+			if ( 'documentation' === $post_type ) {
+				// For documentation, use the second URL segment for the category.
+				if ( ! empty( $segments[1] ) ) {
+					$category_name = ucfirst( $segments[1] );
+					$category_slug = sanitize_title( $segments[1] );
+
+					// Get or create the term in documentation_category taxonomy.
+					$term = get_term_by( 'slug', $category_slug, 'documentation_category' );
+					if ( ! $term ) {
+						$term_data = wp_insert_term(
+							$category_name,
+							'documentation_category',
+							array(
+								'slug' => $category_slug,
+							)
+						);
+						if ( ! is_wp_error( $term_data ) ) {
+							wp_set_post_terms( $post_id, array( $term_data['term_id'] ), 'documentation_category' );
+						}
+					} else {
+						wp_set_post_terms( $post_id, array( $term->term_id ), 'documentation_category' );
+					}
+				}
+			} else {
+				// For regular posts, use the first segment as category.
+				if ( ! empty( $segments[0] ) ) {
+					$category_name = ucfirst( $segments[0] );
+					$category_slug = sanitize_title( $segments[0] );
+
+					// Get or create the category
+					$category = get_category_by_slug( $category_slug );
+					if ( ! $category ) {
+						$term_data = wp_insert_term(
+							$category_name,
+							'category',
+							array(
+								'slug' => $category_slug,
+							)
+						);
+						if ( ! is_wp_error( $term_data ) ) {
+							wp_set_post_categories( $post_id, array( $term_data['term_id'] ) );
+						}
+					} else {
+						wp_set_post_categories( $post_id, array( $category->term_id ) );
+					}
+				}
+			}
+			return;
+		}
+
+		// Original categorization logic for other sites
 		// Map content types to category slugs
 		$category_map = array(
 			'documentation' => 'documentation',
@@ -601,30 +701,23 @@ Site context:
 		);
 
 		$category_slug = isset( $category_map[ $analysis['content_type'] ] ) ? $category_map[ $analysis['content_type'] ] : 'uncategorized';
-		
+
 		// Get or create category
 		$category = get_category_by_slug( $category_slug );
 		if ( ! $category ) {
-			$category_id = wp_insert_category( array(
-				'cat_name'             => ucfirst( $analysis['content_type'] ),
-				'category_nicename'    => $category_slug,
-				'category_description' => sprintf( __( 'Auto-generated category for %s content', 'llm-url-solution' ), $analysis['content_type'] ),
-			) );
-			if ( ! is_wp_error( $category_id ) ) {
-				wp_set_post_categories( $post_id, array( $category_id ) );
+			$term_data = wp_insert_term(
+				ucfirst( $analysis['content_type'] ),
+				'category',
+				array(
+					'slug'        => $category_slug,
+					'description' => sprintf( __( 'Auto-generated category for %s content', 'llm-url-solution' ), $analysis['content_type'] ),
+				)
+			);
+			if ( ! is_wp_error( $term_data ) ) {
+				wp_set_post_categories( $post_id, array( $term_data['term_id'] ) );
 			}
 		} else {
 			wp_set_post_categories( $post_id, array( $category->term_id ) );
 		}
 	}
-
-	/**
-	 * Process scheduled content generation.
-	 *
-	 * @since    1.0.0
-	 * @param    int    $log_id    The log ID.
-	 */
-	public function process_scheduled_generation( $log_id ) {
-		$this->generate_content_for_log( $log_id );
-	}
-} 
+}

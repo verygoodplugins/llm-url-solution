@@ -37,7 +37,7 @@ class LLM_URL_Database {
 	 */
 	public function __construct() {
 		global $wpdb;
-		
+
 		$this->tables = array(
 			'404_logs' => $wpdb->prefix . 'llm_url_404_logs',
 			'settings' => $wpdb->prefix . 'llm_url_settings',
@@ -48,7 +48,7 @@ class LLM_URL_Database {
 	 * Log a 404 error.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $data    The 404 data to log.
+	 * @param    array $data    The 404 data to log.
 	 * @return   int|false         The number of rows inserted, or false on error.
 	 */
 	public function log_404( $data ) {
@@ -56,14 +56,15 @@ class LLM_URL_Database {
 
 		// Sanitize data
 		$insert_data = array(
-			'requested_url' => esc_url_raw( $data['requested_url'] ),
-			'url_slug'      => sanitize_title( $data['url_slug'] ),
-			'referrer'      => ! empty( $data['referrer'] ) ? esc_url_raw( $data['referrer'] ) : '',
-			'ip_address'    => ! empty( $data['ip_address'] ) ? sanitize_text_field( $data['ip_address'] ) : '',
-			'user_agent'    => ! empty( $data['user_agent'] ) ? sanitize_text_field( $data['user_agent'] ) : '',
-			'timestamp'     => current_time( 'mysql' ),
-			'confidence_score' => isset( $data['confidence_score'] ) ? floatval( $data['confidence_score'] ) : null,
+			'requested_url'      => esc_url_raw( $data['requested_url'] ),
+			'url_slug'           => sanitize_title( $data['url_slug'] ),
+			'referrer'           => ! empty( $data['referrer'] ) ? esc_url_raw( $data['referrer'] ) : '',
+			'ip_address'         => ! empty( $data['ip_address'] ) ? sanitize_text_field( $data['ip_address'] ) : '',
+			'user_agent'         => ! empty( $data['user_agent'] ) ? sanitize_text_field( $data['user_agent'] ) : '',
+			'timestamp'          => current_time( 'mysql' ),
+			'confidence_score'   => isset( $data['confidence_score'] ) ? floatval( $data['confidence_score'] ) : null,
 			'detected_post_type' => isset( $data['detected_post_type'] ) ? sanitize_text_field( $data['detected_post_type'] ) : null,
+			'generation_status'  => 'pending',
 		);
 
 		// Check if this URL was already logged recently (within last hour)
@@ -81,18 +82,21 @@ class LLM_URL_Database {
 			return false; // Don't log duplicates within an hour
 		}
 
-		return $wpdb->insert(
+		$result = $wpdb->insert(
 			$this->tables['404_logs'],
 			$insert_data,
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%s', '%s' )
 		);
+
+		// Return the insert ID if successful
+		return $result ? $wpdb->insert_id : false;
 	}
 
 	/**
 	 * Get unprocessed 404 logs.
 	 *
 	 * @since    1.0.0
-	 * @param    int      $limit    Number of logs to retrieve.
+	 * @param    int $limit    Number of logs to retrieve.
 	 * @return   array              Array of log objects.
 	 */
 	public function get_unprocessed_404s( $limit = 10 ) {
@@ -115,15 +119,15 @@ class LLM_URL_Database {
 	 * Get all 404 logs with pagination.
 	 *
 	 * @since    1.0.0
-	 * @param    int      $page         Current page number.
-	 * @param    int      $per_page     Items per page.
-	 * @param    array    $filters      Optional filters.
+	 * @param    int   $page         Current page number.
+	 * @param    int   $per_page     Items per page.
+	 * @param    array $filters      Optional filters.
 	 * @return   array                  Array containing logs and total count.
 	 */
 	public function get_404_logs( $page = 1, $per_page = 20, $filters = array() ) {
 		global $wpdb;
 
-		$offset = ( $page - 1 ) * $per_page;
+		$offset        = ( $page - 1 ) * $per_page;
 		$where_clauses = array( '1=1' );
 
 		// Apply filters
@@ -136,7 +140,7 @@ class LLM_URL_Database {
 		}
 
 		if ( ! empty( $filters['search'] ) ) {
-			$search = '%' . $wpdb->esc_like( $filters['search'] ) . '%';
+			$search          = '%' . $wpdb->esc_like( $filters['search'] ) . '%';
 			$where_clauses[] = $wpdb->prepare( '(requested_url LIKE %s OR url_slug LIKE %s)', $search, $search );
 		}
 
@@ -167,8 +171,8 @@ class LLM_URL_Database {
 	 * Mark a 404 log as processed.
 	 *
 	 * @since    1.0.0
-	 * @param    int      $log_id    The log ID.
-	 * @param    int      $post_id   Optional. The generated post ID.
+	 * @param    int $log_id    The log ID.
+	 * @param    int $post_id   Optional. The generated post ID.
 	 * @return   int|false           The number of rows updated, or false on error.
 	 */
 	public function mark_as_processed( $log_id, $post_id = null ) {
@@ -180,7 +184,7 @@ class LLM_URL_Database {
 
 		if ( $post_id ) {
 			$data['content_generated'] = 1;
-			$data['post_id'] = (int) $post_id;
+			$data['post_id']           = (int) $post_id;
 		}
 
 		return $wpdb->update(
@@ -196,7 +200,7 @@ class LLM_URL_Database {
 	 * Get a single 404 log by ID.
 	 *
 	 * @since    1.0.0
-	 * @param    int      $log_id    The log ID.
+	 * @param    int $log_id    The log ID.
 	 * @return   object|null         The log object or null if not found.
 	 */
 	public function get_404_log( $log_id ) {
@@ -214,7 +218,7 @@ class LLM_URL_Database {
 	 * Delete old 404 logs.
 	 *
 	 * @since    1.0.0
-	 * @param    int      $days    Number of days to keep logs.
+	 * @param    int $days    Number of days to keep logs.
 	 * @return   int|false         The number of rows deleted, or false on error.
 	 */
 	public function cleanup_old_logs( $days = 30 ) {
@@ -280,7 +284,7 @@ class LLM_URL_Database {
 		global $wpdb;
 
 		$hourly_limit = (int) get_option( 'llm_url_solution_rate_limit_hourly', 10 );
-		$daily_limit = (int) get_option( 'llm_url_solution_rate_limit_daily', 50 );
+		$daily_limit  = (int) get_option( 'llm_url_solution_rate_limit_daily', 50 );
 
 		// Check hourly limit
 		$hourly_count = $wpdb->get_var(
@@ -323,4 +327,70 @@ class LLM_URL_Database {
 			'message' => '',
 		);
 	}
-} 
+
+	/**
+	 * Update generation status for a log entry.
+	 *
+	 * @since    1.1.0
+	 * @param    int    $log_id    The log ID.
+	 * @param    string $status    The status (pending, generating, success, failed).
+	 * @param    string $message   Optional status message.
+	 * @return   int|false           The number of rows updated, or false on error.
+	 */
+	public function update_generation_status( $log_id, $status, $message = '' ) {
+		global $wpdb;
+
+		$data = array(
+			'generation_status' => sanitize_text_field( $status ),
+		);
+
+		if ( ! empty( $message ) ) {
+			$data['generation_message'] = sanitize_text_field( $message );
+		}
+
+		return $wpdb->update(
+			$this->tables['404_logs'],
+			$data,
+			array( 'id' => (int) $log_id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+	}
+
+	/**
+	 * Delete a single log entry by ID.
+	 *
+	 * @since    1.2.0
+	 * @param    int $log_id    The log ID.
+	 * @return   int|false         The number of rows deleted, or false on error.
+	 */
+	public function delete_log( $log_id ) {
+		global $wpdb;
+		$table_name = $this->tables['404_logs'];
+		return $wpdb->delete( $table_name, array( 'id' => $log_id ), array( '%d' ) );
+	}
+
+	/**
+	 * Flush all logs.
+	 *
+	 * @since    1.2.0
+	 */
+	public function flush_logs() {
+		global $wpdb;
+		$table_name = $this->tables['404_logs'];
+		$wpdb->query( "TRUNCATE TABLE $table_name" );
+	}
+
+	/**
+	 * Delete multiple logs.
+	 *
+	 * @since    1.2.0
+	 * @param    array $log_ids    The log IDs to delete.
+	 */
+	public function delete_logs( $log_ids ) {
+		global $wpdb;
+		$table_name   = $this->tables['404_logs'];
+		$log_ids_safe = implode( ',', array_map( 'absint', $log_ids ) );
+		$wpdb->query( "DELETE FROM $table_name WHERE id IN ($log_ids_safe)" );
+	}
+}

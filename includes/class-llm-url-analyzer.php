@@ -28,10 +28,43 @@ class LLM_URL_Analyzer {
 	 * @var      array    $stop_words    Common stop words.
 	 */
 	private $stop_words = array(
-		'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
-		'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
-		'to', 'was', 'will', 'with', 'the', 'this', 'but', 'they', 'have',
-		'had', 'what', 'when', 'where', 'who', 'which', 'why', 'how'
+		'a',
+		'an',
+		'and',
+		'are',
+		'as',
+		'at',
+		'be',
+		'by',
+		'for',
+		'from',
+		'has',
+		'he',
+		'in',
+		'is',
+		'it',
+		'its',
+		'of',
+		'on',
+		'that',
+		'the',
+		'to',
+		'was',
+		'will',
+		'with',
+		'the',
+		'this',
+		'but',
+		'they',
+		'have',
+		'had',
+		'what',
+		'when',
+		'where',
+		'who',
+		'which',
+		'why',
+		'how',
 	);
 
 	/**
@@ -43,17 +76,17 @@ class LLM_URL_Analyzer {
 	 */
 	private $content_indicators = array(
 		'documentation' => array( 'docs', 'documentation', 'guide', 'manual', 'reference', 'api', 'tutorial' ),
-		'blog' => array( 'blog', 'article', 'post', 'news', 'update', 'announcement' ),
-		'product' => array( 'product', 'feature', 'pricing', 'plans', 'compare', 'vs' ),
-		'support' => array( 'help', 'support', 'faq', 'troubleshoot', 'fix', 'solve', 'issue' ),
-		'tutorial' => array( 'how-to', 'howto', 'tutorial', 'guide', 'walkthrough', 'setup' ),
+		'blog'          => array( 'blog', 'article', 'post', 'news', 'update', 'announcement' ),
+		'product'       => array( 'product', 'feature', 'pricing', 'plans', 'compare', 'vs' ),
+		'support'       => array( 'help', 'support', 'faq', 'troubleshoot', 'fix', 'solve', 'issue' ),
+		'tutorial'      => array( 'how-to', 'howto', 'tutorial', 'guide', 'walkthrough', 'setup' ),
 	);
 
 	/**
 	 * Analyze a URL slug.
 	 *
 	 * @since    1.0.0
-	 * @param    string    $url_slug    The URL slug to analyze.
+	 * @param    string $url_slug    The URL slug to analyze.
 	 * @return   array                  Analysis results.
 	 */
 	public function analyze_url( $url_slug ) {
@@ -67,23 +100,23 @@ class LLM_URL_Analyzer {
 		);
 
 		// Extract keywords
-		$keywords = $this->extract_keywords( $url_slug );
+		$keywords             = $this->extract_keywords( $url_slug );
 		$analysis['keywords'] = $keywords;
 
 		// Determine content type
-		$content_type = $this->determine_content_type( $keywords );
+		$content_type             = $this->determine_content_type( $keywords );
 		$analysis['content_type'] = $content_type;
 
 		// Extract intent
-		$intent = $this->extract_intent( $keywords, $content_type );
+		$intent             = $this->extract_intent( $keywords, $content_type );
 		$analysis['intent'] = $intent;
 
 		// Generate topic
-		$topic = $this->generate_topic( $keywords );
+		$topic             = $this->generate_topic( $keywords );
 		$analysis['topic'] = $topic;
 
 		// Calculate confidence
-		$confidence = $this->calculate_confidence( $analysis );
+		$confidence             = $this->calculate_confidence( $analysis );
 		$analysis['confidence'] = $confidence;
 
 		return apply_filters( 'llm_url_solution_url_analysis', $analysis, $url_slug );
@@ -93,34 +126,34 @@ class LLM_URL_Analyzer {
 	 * Extract keywords from URL slug.
 	 *
 	 * @since    1.0.0
-	 * @param    string    $slug    The URL slug.
+	 * @param    string $slug    The URL slug.
 	 * @return   array              Extracted keywords.
 	 */
 	private function extract_keywords( $slug ) {
 		// Split by common separators
 		$parts = preg_split( '/[-_\/\s]+/', $slug );
-		
+
 		// Filter and clean
 		$keywords = array();
 		foreach ( $parts as $part ) {
 			$part = strtolower( trim( $part ) );
-			
+
 			// Skip empty parts and stop words
 			if ( empty( $part ) || in_array( $part, $this->stop_words, true ) ) {
 				continue;
 			}
-			
+
 			// Skip very short words unless they're known acronyms
 			if ( strlen( $part ) < 3 && ! $this->is_known_acronym( $part ) ) {
 				continue;
 			}
-			
+
 			$keywords[] = $part;
 		}
-		
+
 		// Remove duplicates while preserving order
 		$keywords = array_values( array_unique( $keywords ) );
-		
+
 		return $keywords;
 	}
 
@@ -128,12 +161,12 @@ class LLM_URL_Analyzer {
 	 * Determine content type based on keywords.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $keywords    The extracted keywords.
+	 * @param    array $keywords    The extracted keywords.
 	 * @return   string                The determined content type.
 	 */
 	private function determine_content_type( $keywords ) {
 		$scores = array();
-		
+
 		foreach ( $this->content_indicators as $type => $indicators ) {
 			$score = 0;
 			foreach ( $keywords as $keyword ) {
@@ -150,12 +183,12 @@ class LLM_URL_Analyzer {
 			}
 			$scores[ $type ] = $score;
 		}
-		
+
 		// Return type with highest score, default to 'blog'
 		if ( empty( $scores ) || max( $scores ) === 0 ) {
 			return 'blog';
 		}
-		
+
 		return array_search( max( $scores ), $scores, true );
 	}
 
@@ -163,8 +196,8 @@ class LLM_URL_Analyzer {
 	 * Extract intent from keywords and content type.
 	 *
 	 * @since    1.0.0
-	 * @param    array     $keywords       The extracted keywords.
-	 * @param    string    $content_type   The content type.
+	 * @param    array  $keywords       The extracted keywords.
+	 * @param    string $content_type   The content type.
 	 * @return   string                    The extracted intent.
 	 */
 	private function extract_intent( $keywords, $content_type ) {
@@ -175,7 +208,7 @@ class LLM_URL_Analyzer {
 			'compare'      => array( 'vs', 'versus', 'compare', 'difference', 'between' ),
 			'reference'    => array( 'api', 'reference', 'docs', 'documentation', 'manual' ),
 		);
-		
+
 		foreach ( $intent_patterns as $intent => $patterns ) {
 			foreach ( $keywords as $keyword ) {
 				if ( in_array( $keyword, $patterns, true ) ) {
@@ -183,7 +216,7 @@ class LLM_URL_Analyzer {
 				}
 			}
 		}
-		
+
 		// Default intent based on content type
 		$default_intents = array(
 			'documentation' => 'reference',
@@ -192,7 +225,7 @@ class LLM_URL_Analyzer {
 			'support'       => 'troubleshoot',
 			'product'       => 'learn',
 		);
-		
+
 		return isset( $default_intents[ $content_type ] ) ? $default_intents[ $content_type ] : 'learn';
 	}
 
@@ -200,20 +233,20 @@ class LLM_URL_Analyzer {
 	 * Generate a human-readable topic from keywords.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $keywords    The extracted keywords.
+	 * @param    array $keywords    The extracted keywords.
 	 * @return   string                The generated topic.
 	 */
 	private function generate_topic( $keywords ) {
 		if ( empty( $keywords ) ) {
 			return __( 'General Information', 'llm-url-solution' );
 		}
-		
+
 		// Capitalize first letter of each keyword
 		$formatted_keywords = array_map( 'ucfirst', $keywords );
-		
+
 		// Join with spaces
 		$topic = implode( ' ', $formatted_keywords );
-		
+
 		return $topic;
 	}
 
@@ -221,12 +254,12 @@ class LLM_URL_Analyzer {
 	 * Calculate confidence score for the analysis.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $analysis    The analysis results.
+	 * @param    array $analysis    The analysis results.
 	 * @return   float                 Confidence score (0-1).
 	 */
 	private function calculate_confidence( $analysis ) {
 		$confidence = 0;
-		
+
 		// More keywords = higher confidence
 		$keyword_count = count( $analysis['keywords'] );
 		if ( $keyword_count >= 3 ) {
@@ -236,27 +269,27 @@ class LLM_URL_Analyzer {
 		} elseif ( $keyword_count >= 1 ) {
 			$confidence += 0.1;
 		}
-		
+
 		// Clear content type = higher confidence
 		if ( $analysis['content_type'] !== 'blog' ) {
 			$confidence += 0.2;
 		}
-		
+
 		// Clear intent = higher confidence
 		if ( ! empty( $analysis['intent'] ) && $analysis['intent'] !== 'learn' ) {
 			$confidence += 0.2;
 		}
-		
+
 		// Meaningful topic = higher confidence
 		if ( strlen( $analysis['topic'] ) > 10 ) {
 			$confidence += 0.1;
 		}
-		
+
 		// URL structure bonus
 		if ( strpos( $analysis['original_slug'], '/' ) !== false ) {
 			$confidence += 0.1; // Hierarchical URL
 		}
-		
+
 		// Cap at 1.0
 		return min( $confidence, 1.0 );
 	}
@@ -265,18 +298,55 @@ class LLM_URL_Analyzer {
 	 * Check if a word is a known acronym.
 	 *
 	 * @since    1.0.0
-	 * @param    string    $word    The word to check.
+	 * @param    string $word    The word to check.
 	 * @return   bool               True if known acronym, false otherwise.
 	 */
 	private function is_known_acronym( $word ) {
 		$acronyms = array(
-			'ai', 'api', 'ui', 'ux', 'id', 'ip', 'it', 'qa', 'hr',
-			'crm', 'cms', 'erp', 'seo', 'roi', 'kpi', 'b2b', 'b2c',
-			'css', 'html', 'js', 'php', 'sql', 'xml', 'json', 'rss',
-			'cdn', 'dns', 'ftp', 'http', 'ssl', 'url', 'vpn', 'lan',
-			'cpu', 'gpu', 'ram', 'ssd', 'hdd', 'os', 'vm', 'ci', 'cd'
+			'ai',
+			'api',
+			'ui',
+			'ux',
+			'id',
+			'ip',
+			'it',
+			'qa',
+			'hr',
+			'crm',
+			'cms',
+			'erp',
+			'seo',
+			'roi',
+			'kpi',
+			'b2b',
+			'b2c',
+			'css',
+			'html',
+			'js',
+			'php',
+			'sql',
+			'xml',
+			'json',
+			'rss',
+			'cdn',
+			'dns',
+			'ftp',
+			'http',
+			'ssl',
+			'url',
+			'vpn',
+			'lan',
+			'cpu',
+			'gpu',
+			'ram',
+			'ssd',
+			'hdd',
+			'os',
+			'vm',
+			'ci',
+			'cd',
 		);
-		
+
 		return in_array( strtolower( $word ), $acronyms, true );
 	}
 
@@ -284,8 +354,8 @@ class LLM_URL_Analyzer {
 	 * Search for related content in existing posts.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $keywords    The keywords to search for.
-	 * @param    int      $limit       Maximum number of results.
+	 * @param    array $keywords    The keywords to search for.
+	 * @param    int   $limit       Maximum number of results.
 	 * @return   array                 Array of related posts.
 	 */
 	public function search_related_content( $keywords, $limit = 10 ) {
@@ -312,12 +382,12 @@ class LLM_URL_Analyzer {
 				'compare' => 'LIKE',
 			);
 		}
-		
+
 		if ( count( $meta_queries ) > 1 ) {
 			$args['meta_query'] = $meta_queries;
 		}
 
-		$query = new WP_Query( $args );
+		$query         = new WP_Query( $args );
 		$related_posts = array();
 
 		if ( $query->have_posts() ) {
@@ -336,4 +406,4 @@ class LLM_URL_Analyzer {
 
 		return $related_posts;
 	}
-} 
+}

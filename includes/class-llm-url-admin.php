@@ -42,12 +42,12 @@ class LLM_URL_Admin {
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
-	 * @param    string    $plugin_name    The name of this plugin.
-	 * @param    string    $version        The version of this plugin.
+	 * @param    string $plugin_name    The name of this plugin.
+	 * @param    string $version        The version of this plugin.
 	 */
 	public function __construct( $plugin_name, $version ) {
 		$this->plugin_name = $plugin_name;
-		$this->version = $version;
+		$this->version     = $version;
 	}
 
 	/**
@@ -56,12 +56,12 @@ class LLM_URL_Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_styles() {
-		wp_enqueue_style( 
-			$this->plugin_name, 
-			LLM_URL_SOLUTION_PLUGIN_URL . 'assets/css/admin.css', 
-			array(), 
-			$this->version, 
-			'all' 
+		wp_enqueue_style(
+			$this->plugin_name,
+			LLM_URL_SOLUTION_PLUGIN_URL . 'assets/css/admin.css',
+			array(),
+			$this->version,
+			'all'
 		);
 	}
 
@@ -71,12 +71,12 @@ class LLM_URL_Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
-		wp_enqueue_script( 
-			$this->plugin_name, 
-			LLM_URL_SOLUTION_PLUGIN_URL . 'assets/js/admin.js', 
-			array( 'jquery' ), 
-			$this->version, 
-			false 
+		wp_enqueue_script(
+			$this->plugin_name,
+			LLM_URL_SOLUTION_PLUGIN_URL . 'assets/js/admin.js',
+			array( 'jquery' ),
+			$this->version,
+			false
 		);
 
 		// Localize script for AJAX
@@ -84,11 +84,11 @@ class LLM_URL_Admin {
 			$this->plugin_name,
 			'llm_url_solution_ajax',
 			array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'admin_url' => admin_url(),
-				'nonce'    => wp_create_nonce( 'llm_url_solution_ajax' ),
+				'ajax_url'         => admin_url( 'admin-ajax.php' ),
+				'admin_url'        => admin_url(),
+				'nonce'            => wp_create_nonce( 'llm_url_solution_ajax' ),
 				'confirm_generate' => __( 'Are you sure you want to generate content for this URL?', 'llm-url-solution' ),
-				'confirm_delete' => __( 'Are you sure you want to delete this log?', 'llm-url-solution' ),
+				'confirm_delete'   => __( 'Are you sure you want to delete this log?', 'llm-url-solution' ),
 			)
 		);
 	}
@@ -176,128 +176,198 @@ class LLM_URL_Admin {
 	public function register_settings() {
 		// Ensure capabilities are set up
 		$this->ensure_capabilities();
-		
+
 		// API Settings
-		register_setting( 'llm_url_solution_api_settings', 'llm_url_solution_openai_api_key', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_text_field',
-		) );
-		
-		register_setting( 'llm_url_solution_api_settings', 'llm_url_solution_claude_api_key', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_text_field',
-		) );
-		
-		register_setting( 'llm_url_solution_api_settings', 'llm_url_solution_ai_model', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_text_field',
-			'default'           => 'gpt-4',
-		) );
-		
-		register_setting( 'llm_url_solution_api_settings', 'llm_url_solution_temperature', array(
-			'type'              => 'number',
-			'sanitize_callback' => array( $this, 'sanitize_float' ),
-			'default'           => 0.7,
-		) );
-		
-		register_setting( 'llm_url_solution_api_settings', 'llm_url_solution_max_tokens', array(
-			'type'              => 'integer',
-			'sanitize_callback' => 'absint',
-			'default'           => 1500,
-		) );
+		register_setting(
+			'llm_url_solution_api_settings',
+			'llm_url_solution_openai_api_key',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_api_settings',
+			'llm_url_solution_claude_api_key',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_api_settings',
+			'llm_url_solution_ai_model',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'default'           => 'gpt-4',
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_api_settings',
+			'llm_url_solution_temperature',
+			array(
+				'type'              => 'number',
+				'sanitize_callback' => array( $this, 'sanitize_float' ),
+				'default'           => 0.7,
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_api_settings',
+			'llm_url_solution_max_tokens',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+				'default'           => 1500,
+			)
+		);
 
 		// Content Settings
-		register_setting( 'llm_url_solution_content_settings', 'llm_url_solution_default_post_type', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_text_field',
-			'default'           => 'post',
-		) );
-		
-		register_setting( 'llm_url_solution_content_settings', 'llm_url_solution_default_post_status', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_text_field',
-			'default'           => 'draft',
-		) );
-		
-		register_setting( 'llm_url_solution_content_settings', 'llm_url_solution_auto_categorize', array(
-			'type'              => 'boolean',
-			'sanitize_callback' => 'rest_sanitize_boolean',
-			'default'           => true,
-		) );
-		
-		register_setting( 'llm_url_solution_content_settings', 'llm_url_solution_auto_tag', array(
-			'type'              => 'boolean',
-			'sanitize_callback' => 'rest_sanitize_boolean',
-			'default'           => true,
-		) );
-		
-		register_setting( 'llm_url_solution_content_settings', 'llm_url_solution_content_min_length', array(
-			'type'              => 'integer',
-			'sanitize_callback' => 'absint',
-			'default'           => 800,
-		) );
-		
-		register_setting( 'llm_url_solution_content_settings', 'llm_url_solution_content_max_length', array(
-			'type'              => 'integer',
-			'sanitize_callback' => 'absint',
-			'default'           => 1500,
-		) );
+		register_setting(
+			'llm_url_solution_content_settings',
+			'llm_url_solution_default_post_type',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'default'           => 'post',
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_content_settings',
+			'llm_url_solution_default_post_status',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'default'           => 'draft',
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_content_settings',
+			'llm_url_solution_auto_categorize',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => true,
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_content_settings',
+			'llm_url_solution_auto_tag',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => true,
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_content_settings',
+			'llm_url_solution_content_min_length',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+				'default'           => 800,
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_content_settings',
+			'llm_url_solution_content_max_length',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+				'default'           => 1500,
+			)
+		);
 
 		// Safety Settings
-		register_setting( 'llm_url_solution_safety_settings', 'llm_url_solution_auto_generate', array(
-			'type'              => 'boolean',
-			'sanitize_callback' => 'rest_sanitize_boolean',
-			'default'           => false,
-		) );
-		
-		register_setting( 'llm_url_solution_safety_settings', 'llm_url_solution_rate_limit_hourly', array(
-			'type'              => 'integer',
-			'sanitize_callback' => 'absint',
-			'default'           => 10,
-		) );
-		
-		register_setting( 'llm_url_solution_safety_settings', 'llm_url_solution_rate_limit_daily', array(
-			'type'              => 'integer',
-			'sanitize_callback' => 'absint',
-			'default'           => 50,
-		) );
-		
-		register_setting( 'llm_url_solution_safety_settings', 'llm_url_solution_manual_approval', array(
-			'type'              => 'boolean',
-			'sanitize_callback' => 'rest_sanitize_boolean',
-			'default'           => true,
-		) );
-		
-		register_setting( 'llm_url_solution_safety_settings', 'llm_url_solution_blacklist_patterns', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_textarea_field',
-			'default'           => '',
-		) );
-		
-		register_setting( 'llm_url_solution_safety_settings', 'llm_url_solution_min_confidence', array(
-			'type'              => 'number',
-			'sanitize_callback' => array( $this, 'sanitize_float' ),
-			'default'           => 0.3,
-		) );
+		register_setting(
+			'llm_url_solution_safety_settings',
+			'llm_url_solution_auto_generate',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => false,
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_safety_settings',
+			'llm_url_solution_rate_limit_hourly',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+				'default'           => 10,
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_safety_settings',
+			'llm_url_solution_rate_limit_daily',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+				'default'           => 50,
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_safety_settings',
+			'llm_url_solution_blacklist_patterns',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_textarea_field',
+				'default'           => '',
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_safety_settings',
+			'llm_url_solution_min_confidence',
+			array(
+				'type'              => 'number',
+				'sanitize_callback' => array( $this, 'sanitize_float' ),
+				'default'           => 0.3,
+			)
+		);
 
 		// Advanced Settings
-		register_setting( 'llm_url_solution_advanced_settings', 'llm_url_solution_custom_referrer_patterns', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_textarea_field',
-			'default'           => '',
-		) );
-		
-		register_setting( 'llm_url_solution_advanced_settings', 'llm_url_solution_custom_prompt', array(
-			'type'              => 'string',
-			'sanitize_callback' => 'sanitize_textarea_field',
-			'default'           => '',
-		) );
-		
-		register_setting( 'llm_url_solution_advanced_settings', 'llm_url_solution_enable_debug_mode', array(
-			'type'              => 'boolean',
-			'sanitize_callback' => 'rest_sanitize_boolean',
-			'default'           => false,
-		) );
+		register_setting(
+			'llm_url_solution_advanced_settings',
+			'llm_url_solution_custom_referrer_patterns',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_textarea_field',
+				'default'           => '',
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_advanced_settings',
+			'llm_url_solution_custom_prompt',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_textarea_field',
+				'default'           => '',
+			)
+		);
+
+		register_setting(
+			'llm_url_solution_advanced_settings',
+			'llm_url_solution_enable_debug_mode',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => false,
+			)
+		);
 	}
 
 	/**
@@ -311,7 +381,7 @@ class LLM_URL_Admin {
 			$role->add_cap( 'manage_llm_url_solution' );
 			$role->add_cap( 'approve_llm_url_content' );
 		}
-		
+
 		// Also add to editor role if desired
 		$editor_role = get_role( 'editor' );
 		if ( $editor_role && ! $editor_role->has_cap( 'approve_llm_url_content' ) ) {
@@ -323,7 +393,7 @@ class LLM_URL_Admin {
 	 * Sanitize float value.
 	 *
 	 * @since    1.0.0
-	 * @param    mixed    $value    The value to sanitize.
+	 * @param    mixed $value    The value to sanitize.
 	 * @return   float               The sanitized float.
 	 */
 	public function sanitize_float( $value ) {
@@ -351,9 +421,9 @@ class LLM_URL_Admin {
 	 * @since    1.0.0
 	 */
 	public function display_dashboard_widget() {
-		$db = new LLM_URL_Database();
+		$db    = new LLM_URL_Database();
 		$stats = $db->get_statistics();
-		
+
 		require_once LLM_URL_SOLUTION_PLUGIN_DIR . 'templates/dashboard-widget.php';
 	}
 
@@ -361,7 +431,7 @@ class LLM_URL_Admin {
 	 * Add plugin action links.
 	 *
 	 * @since    1.0.0
-	 * @param    array    $links    Existing links.
+	 * @param    array $links    Existing links.
 	 * @return   array              Modified links.
 	 */
 	public function add_action_links( $links ) {
@@ -369,7 +439,7 @@ class LLM_URL_Admin {
 			'<a href="' . admin_url( 'admin.php?page=llm-url-solution-settings' ) . '">' . __( 'Settings', 'llm-url-solution' ) . '</a>',
 			'<a href="' . admin_url( 'admin.php?page=llm-url-solution' ) . '">' . __( 'Dashboard', 'llm-url-solution' ) . '</a>',
 		);
-		
+
 		return array_merge( $action_links, $links );
 	}
 
@@ -380,9 +450,7 @@ class LLM_URL_Admin {
 	 */
 	public function ajax_generate_content() {
 		// Check nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'llm_url_solution_ajax' ) ) {
-			wp_die( esc_html__( 'Security check failed', 'llm-url-solution' ) );
-		}
+		check_ajax_referer( 'llm_url_solution_ajax' );
 
 		// Check permissions
 		if ( ! current_user_can( 'approve_llm_url_content' ) && ! current_user_can( 'manage_options' ) ) {
@@ -397,7 +465,7 @@ class LLM_URL_Admin {
 
 		// Generate content
 		$generator = new LLM_URL_Content_Generator();
-		$result = $generator->generate_content_for_log( $log_id );
+		$result    = $generator->generate_content_for_log( $log_id );
 
 		if ( $result['success'] ) {
 			wp_send_json_success( $result );
@@ -413,9 +481,7 @@ class LLM_URL_Admin {
 	 */
 	public function ajax_delete_log() {
 		// Check nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'llm_url_solution_ajax' ) ) {
-			wp_die( esc_html__( 'Security check failed', 'llm-url-solution' ) );
-		}
+		check_ajax_referer( 'llm_url_solution_ajax' );
 
 		// Check permissions
 		if ( ! current_user_can( 'manage_llm_url_solution' ) && ! current_user_can( 'manage_options' ) ) {
@@ -429,9 +495,8 @@ class LLM_URL_Admin {
 		}
 
 		// Delete log
-		global $wpdb;
-		$table = $wpdb->prefix . 'llm_url_404_logs';
-		$deleted = $wpdb->delete( $table, array( 'id' => $log_id ), array( '%d' ) );
+		$db      = new LLM_URL_Database();
+		$deleted = $db->delete_log( $log_id );
 
 		if ( $deleted ) {
 			wp_send_json_success( __( 'Log deleted successfully', 'llm-url-solution' ) );
@@ -439,4 +504,4 @@ class LLM_URL_Admin {
 			wp_send_json_error( __( 'Failed to delete log', 'llm-url-solution' ) );
 		}
 	}
-} 
+}

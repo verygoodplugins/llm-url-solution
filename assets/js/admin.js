@@ -10,7 +10,7 @@
 	$(document).ready(function() {
 		
 		// Generate content button click handler
-		$(document).on('click', '.llm-url-generate-content', function(e) {
+		$(document).on('click', '.generate-content', function(e) {
 			e.preventDefault();
 			
 			var $button = $(this);
@@ -36,7 +36,7 @@
 				data: {
 					action: 'llm_url_generate_content',
 					log_id: logId,
-					nonce: llm_url_solution_ajax.nonce
+					_ajax_nonce: llm_url_solution_ajax.nonce
 				},
 				success: function(response) {
 					if (response.success) {
@@ -78,7 +78,7 @@
 		});
 		
 		// Delete log button click handler
-		$(document).on('click', '.llm-url-delete-log', function(e) {
+		$(document).on('click', '.delete-log', function(e) {
 			e.preventDefault();
 			
 			var $button = $(this);
@@ -103,7 +103,7 @@
 				data: {
 					action: 'llm_url_delete_log',
 					log_id: logId,
-					nonce: llm_url_solution_ajax.nonce
+					_ajax_nonce: llm_url_solution_ajax.nonce
 				},
 				success: function(response) {
 					if (response.success) {

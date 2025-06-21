@@ -100,7 +100,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				</table>
 				<?php
 				break;
-				
+
 			case 'content':
 				settings_fields( 'llm_url_solution_content_settings' );
 				?>
@@ -114,8 +114,10 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 								<?php
 								$post_types = get_post_types( array( 'public' => true ), 'objects' );
 								foreach ( $post_types as $post_type ) :
-									if ( $post_type->name === 'attachment' ) continue;
-								?>
+									if ( $post_type->name === 'attachment' ) {
+										continue;
+									}
+									?>
 									<option value="<?php echo esc_attr( $post_type->name ); ?>" <?php selected( get_option( 'llm_url_solution_default_post_type' ), $post_type->name ); ?>>
 										<?php echo esc_html( $post_type->labels->singular_name ); ?>
 									</option>
@@ -179,7 +181,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				</table>
 				<?php
 				break;
-				
+
 			case 'safety':
 				settings_fields( 'llm_url_solution_safety_settings' );
 				?>
@@ -216,16 +218,6 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 					</tr>
 					
 					<tr>
-						<th scope="row"><?php esc_html_e( 'Manual Approval', 'llm-url-solution' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="llm_url_solution_manual_approval" value="1" <?php checked( get_option( 'llm_url_solution_manual_approval', true ) ); ?> />
-								<?php esc_html_e( 'Require manual approval before generating content', 'llm-url-solution' ); ?>
-							</label>
-						</td>
-					</tr>
-					
-					<tr>
 						<th scope="row">
 							<label for="llm_url_solution_blacklist_patterns"><?php esc_html_e( 'URL Blacklist Patterns', 'llm-url-solution' ); ?></label>
 						</th>
@@ -247,7 +239,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				</table>
 				<?php
 				break;
-				
+
 			case 'advanced':
 				settings_fields( 'llm_url_solution_advanced_settings' );
 				?>
@@ -285,7 +277,7 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				<?php
 				break;
 		}
-		
+
 		submit_button();
 		?>
 	</form>

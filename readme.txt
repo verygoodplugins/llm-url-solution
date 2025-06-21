@@ -1,6 +1,7 @@
 === LLM URL Solution ===
-Contributors: yourname
+Contributors: verygoodplugins
 Tags: 404, content generation, AI, ChatGPT, SEO, automation
+
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 7.4

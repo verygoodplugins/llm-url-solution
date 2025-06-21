@@ -34,6 +34,7 @@ wp-config.php
 
 # htaccess
 /.htaccess
+/vendor
 
 # All plugins
 #
@@ -46,3 +47,5 @@ wp-config.php
 # Note: If you wish to whitelist themes,
 # uncomment the next line
 #/wp-content/themes
+llm-url-solution.code-workspace
+llm-url-solution.code-workspace

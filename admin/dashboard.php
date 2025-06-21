@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Get statistics
-$db = new LLM_URL_Database();
-$stats = $db->get_statistics();
+$db          = new LLM_URL_Database();
+$stats       = $db->get_statistics();
 $recent_404s = $db->get_unprocessed_404s( 5 );
 $rate_limits = $db->check_rate_limits();
 ?>
@@ -27,7 +27,7 @@ $rate_limits = $db->check_rate_limits();
 	<?php if ( ! get_option( 'llm_url_solution_openai_api_key' ) && ! get_option( 'llm_url_solution_claude_api_key' ) ) : ?>
 		<div class="notice notice-warning">
 			<p>
-				<?php 
+				<?php
 				printf(
 					/* translators: %s: Settings page URL */
 					esc_html__( 'Please configure your AI API keys in the %s to start generating content.', 'llm-url-solution' ),
@@ -113,7 +113,7 @@ $rate_limits = $db->check_rate_limits();
 								<small><?php echo esc_url( $log->requested_url ); ?></small>
 							</td>
 							<td>
-								<?php 
+								<?php
 								$referrer_domain = wp_parse_url( $log->referrer, PHP_URL_HOST );
 								echo esc_html( $referrer_domain ?: __( 'Unknown', 'llm-url-solution' ) );
 								?>

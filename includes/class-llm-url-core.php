@@ -56,7 +56,7 @@ class LLM_URL_Core {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
-		
+
 		// Check for database upgrades
 		$this->maybe_upgrade_database();
 	}
@@ -135,7 +135,7 @@ class LLM_URL_Core {
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_settings' );
 		$this->loader->add_action( 'wp_dashboard_setup', $plugin_admin, 'add_dashboard_widget' );
 		$this->loader->add_filter( 'plugin_action_links_' . LLM_URL_SOLUTION_PLUGIN_BASENAME, $plugin_admin, 'add_action_links' );
-		
+
 		// AJAX handlers
 		$this->loader->add_action( 'wp_ajax_llm_url_generate_content', $plugin_admin, 'ajax_generate_content' );
 		$this->loader->add_action( 'wp_ajax_llm_url_delete_log', $plugin_admin, 'ajax_delete_log' );
@@ -150,7 +150,7 @@ class LLM_URL_Core {
 	 */
 	private function define_public_hooks() {
 		$plugin_detector = new LLM_URL_404_Detector( $this->get_plugin_name(), $this->get_version() );
-		
+
 		// Hook into WordPress 404 handling
 		$this->loader->add_action( 'wp', $plugin_detector, 'detect_404_with_ai_referrer' );
 		$this->loader->add_action( 'template_redirect', $plugin_detector, 'maybe_generate_content' );
@@ -205,4 +205,4 @@ class LLM_URL_Core {
 	public function get_version() {
 		return $this->version;
 	}
-} 
+}
