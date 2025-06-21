@@ -1,11 +1,11 @@
 === LLM URL Solution ===
 Contributors: verygoodplugins
-Tags: 404, content generation, AI, ChatGPT, SEO, automation
+Tags: 404, content generation, AI, ChatGPT, SEO, automation, SEOPress, Rank Math, Yoast, All in One SEO
 
 Requires at least: 5.8
-Tested up to: 6.4
+Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,7 +23,7 @@ When AI chatbots reference URLs on your site that don't exist, this plugin captu
 * **Smart URL Analysis**: Extracts keywords and intent from requested URLs
 * **AI-Powered Content Generation**: Creates relevant content using OpenAI GPT or Claude APIs
 * **Intelligent Post Type Detection**: Automatically determines the appropriate post type based on URL taxonomy
-* **SEO Optimization**: Generates content with proper structure, meta descriptions, and keywords
+* **SEO Optimization**: Generates content with proper structure, meta descriptions, and keywords. Now supports Yoast SEO, Rank Math, SEOPress, and All in One SEO.
 * **Content Control**: Manual or automatic approval workflow with customizable generation settings
 * **Rate Limiting**: Prevents abuse with hourly and daily generation limits
 * **Blacklist Support**: Exclude specific URL patterns from content generation
@@ -63,6 +63,10 @@ This means the plugin adapts to your site's structure without any hardcoded rule
 3. Go to 'LLM URL Solution' > 'Settings' to configure your AI API keys
 4. Configure your content generation preferences
 5. Monitor the dashboard for 404 errors from AI chatbots
+
+= Automatic Updates =
+
+To enable automatic updates, install the [GitHub Updater](https://github.com/a8cteam51/github-updater) plugin. Once installed and activated, LLM URL Solution will receive updates automatically from the official GitHub repository.
 
 = Requirements =
 
@@ -126,6 +130,15 @@ The plugin enforces hourly and daily rate limits to prevent abuse and control co
 
 == Changelog ==
 
+= 1.3.0 =
+* Added - Support for setting meta descriptions and focus keywords in Yoast SEO, Rank Math, SEOPress, and All in One SEO.
+* Tweak - Updated plugin Readme and documentation with new marketing copy and screenshot.
+
+= 1.2.0 =
+* Fixed - Redundant H1 tag was being added to the top of generated content.
+* Fixed - Improved AI response parsing to handle JSON wrapped in markdown code blocks.
+* Tweak - Updated plugin Readme and documentation.
+
 = 1.1.0 =
 * Added automatic content generation option - content can now be generated automatically when 404s are detected
 * Implemented intelligent post type detection based on URL taxonomy structure
@@ -146,6 +159,12 @@ The plugin enforces hourly and daily rate limits to prevent abuse and control co
 * Rate limiting and safety controls
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+This version adds support for Yoast SEO, Rank Math, SEOPress, and All in One SEO. The readme has also been updated with additional details about the plugin.
+
+= 1.2.0 =
+This version fixes a bug that caused a redundant H1 tag to be added to generated content, and improves AI response parsing.
 
 = 1.1.0 =
 New automatic content generation feature and intelligent post type detection! The plugin now adapts to your site's taxonomy structure automatically.

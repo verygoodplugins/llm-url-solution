@@ -11,17 +11,32 @@ Automatically generate SEO-optimized content for 404 URLs that originate from AI
 
 LLM URL Solution is a powerful WordPress plugin that turns 404 errors from AI chatbot referrals into opportunities. When AI chatbots like ChatGPT or Claude reference non-existent URLs on your site, this plugin captures those 404 errors and uses AI to generate relevant, SEO-optimized content automatically.
 
+## The Problem: AI-Generated 404 "Hallucinations"
+
+AI chatbots like ChatGPT are a rapidly growing source of referral traffic. But what happens when they "hallucinate" and link to pages on your site that don't exist? You get a stream of 404 errors from highly-qualified visitors who were looking for specific information.
+
+Each of these 404s represents a missed opportunity to engage a user and provide value. LLM URL Solution was built to solve this exact problem by turning these AI-generated 404s into SEO-optimized content automatically based on existing content on your site and blog.
+
 ### Key Features
 
 - 🤖 **Automatic 404 Detection** - Monitors and logs 404 errors from AI chatbot referrers
 - 🔍 **Smart URL Analysis** - Extracts keywords and intent from requested URLs
-- ✨ **AI-Powered Content Generation** - Creates relevant content using OpenAI GPT or Claude APIs
+- 🥞 **Extracts relevant content** - Searches database for relevant content based on the post body and SEO meta data
+- ✨ **AI-Powered Content Generation** - Uses URL and matching content to generate a new post
+- 🔍 **Selects the best AI model** - Select from the best OpenAI GPTs or Claude APIs based on the URL and content
 - 📈 **SEO Optimization** - Generates content with proper structure, meta descriptions, and keywords
 - 🎯 **Intelligent Post Type Detection** - Automatically determines the appropriate post type based on URL taxonomy
 - 🔒 **Content Control** - Manual or automatic approval workflow with customizable generation settings
 - ⚡ **Rate Limiting** - Prevents abuse with hourly and daily generation limits
 - 🚫 **Blacklist Support** - Exclude specific URL patterns from content generation
 - 🔄 **Multi-AI Support** - Works with OpenAI GPT-4, GPT-3.5, and Claude models
+
+## 📈 Supported SEO Plugins
+The plugin now automatically detects and sets meta descriptions and focus keywords for the following SEO plugins:
+- Yoast SEO
+- Rank Math
+- SEOPress
+- All in One SEO
 
 ## 📋 Requirements
 
@@ -67,6 +82,9 @@ git clone https://github.com/yourusername/llm-url-solution.git
    - Enable/disable automatic content generation
    - Set rate limits (hourly/daily)
    - Configure URL blacklist patterns
+
+## ⚡ Automatic Updates
+To enable automatic updates, you can use the [GitHub Updater](https://github.com/a8cteam51/github-updater) plugin. Once installed, it will automatically manage updates for LLM URL Solution directly from the official GitHub repository, ensuring you always have the latest features and security fixes.
 
 ## 🎯 How It Works
 
@@ -181,6 +199,15 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 5. Open a Pull Request
 
 ## 📝 Changelog
+
+### Version 1.3.0 (2024-07-XX)
+- **Added**: Support for Yoast SEO, Rank Math, SEOPress, and All in One SEO.
+- **Tweak**: Added marketing copy and new screenshot to readme.
+
+### Version 1.2.0 (2024-07-XX)
+- **Fixed**: Removed redundant `<h1>` tag that was being added to generated content.
+- **Fixed**: Improved AI response parsing to correctly handle JSON wrapped in markdown blocks.
+- **Tweak**: Updated documentation and plugin version.
 
 ### Version 1.1.0 (2024-01-XX)
 - Added automatic content generation option

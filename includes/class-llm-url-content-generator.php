@@ -493,6 +493,11 @@ Site context:
 		$path = wp_parse_url( $log->requested_url, PHP_URL_PATH );
 		$slug = basename( $path );
 
+		// Remove redundant H1 from content.
+		if ( isset( $content['content'] ) ) {
+			$content['content'] = preg_replace( '/^\s*<h1>.*<\/h1>\s*/isU', '', $content['content'], 1 );
+		}
+
 		// Prepare post data.
 		$post_data = array(
 			'post_title'   => sanitize_text_field( $content['title'] ),
@@ -530,13 +535,75 @@ Site context:
 			$this->auto_categorize_post( $post_id, $analysis );
 		}
 
-		// Set SEO meta if Yoast is active
-		if ( ! empty( $content['focus_keyword'] ) && defined( 'WPSEO_VERSION' ) ) {
-			update_post_meta( $post_id, '_yoast_wpseo_focuskw', sanitize_text_field( $content['focus_keyword'] ) );
-			update_post_meta( $post_id, '_yoast_wpseo_metadesc', sanitize_text_field( $content['excerpt'] ) );
-		}
+		// Set SEO meta for popular plugins.
+		$this->set_seo_meta( $post_id, $content );
 
 		return $post_id;
+	}
+
+	/**
+	 * Set SEO meta for popular plugins.
+	 *
+	 * @since    1.3.0
+	 * @param    int   $post_id    The post ID.
+	 * @param    array $content    The generated content.
+	 */
+	private function set_seo_meta( $post_id, $content ) {
+		$focus_keyword = ! empty( $content['focus_keyword'] ) ? sanitize_text_field( $content['focus_keyword'] ) : '';
+		$meta_desc     = ! empty( $content['excerpt'] ) ? sanitize_text_field( $content['excerpt'] ) : '';
+
+		if ( empty( $focus_keyword ) && empty( $meta_desc ) ) {
+			return;
+		}
+
+		// Yoast SEO.
+		if ( defined( 'WPSEO_VERSION' ) ) {
+			if ( ! empty( $focus_keyword ) ) {
+				update_post_meta( $post_id, '_yoast_wpseo_focuskw', $focus_keyword );
+			}
+			if ( ! empty( $meta_desc ) ) {
+				update_post_meta( $post_id, '_yoast_wpseo_metadesc', $meta_desc );
+			}
+		}
+
+		// All in One SEO.
+		if ( defined( 'AIOSEO_VERSION' ) ) {
+			if ( ! empty( $focus_keyword ) ) {
+				update_post_meta(
+					$post_id,
+					'_aioseo_focus_keyphrase',
+					wp_json_encode(
+						array(
+							'keyphrase' => $focus_keyword,
+							'score'     => 0, // Let AIOSEO calculate the score.
+						)
+					)
+				);
+			}
+			if ( ! empty( $meta_desc ) ) {
+				update_post_meta( $post_id, '_aioseo_description', $meta_desc );
+			}
+		}
+
+		// Rank Math.
+		if ( defined( 'RANK_MATH_VERSION' ) ) {
+			if ( ! empty( $focus_keyword ) ) {
+				update_post_meta( $post_id, 'rank_math_focus_keyword', $focus_keyword );
+			}
+			if ( ! empty( $meta_desc ) ) {
+				update_post_meta( $post_id, 'rank_math_description', $meta_desc );
+			}
+		}
+
+		// SEOPress.
+		if ( defined( 'SEOPRESS_VERSION' ) ) {
+			if ( ! empty( $focus_keyword ) ) {
+				update_post_meta( $post_id, '_seopress_analysis_target_kw', $focus_keyword );
+			}
+			if ( ! empty( $meta_desc ) ) {
+				update_post_meta( $post_id, '_seopress_titles_desc', $meta_desc );
+			}
+		}
 	}
 
 	/**

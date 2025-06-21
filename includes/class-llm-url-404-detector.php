@@ -167,8 +167,6 @@ class LLM_URL_404_Detector {
 	 */
 	private function is_ai_chatbot_referrer( $referrer ) {
 
-		return true;
-
 		if ( empty( $referrer ) ) {
 			return false;
 		}
