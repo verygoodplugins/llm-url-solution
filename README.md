@@ -95,6 +95,9 @@ git clone https://github.com/yourusername/llm-url-solution.git
 - **Temperature** (0.0-1.0) - Controls creativity vs consistency (default: 0.7)
 - **Max Tokens** - Maximum length of generated content (default: 1500)
 
+<img width="724" alt="image" src="https://github.com/user-attachments/assets/c6ef5369-600c-49ac-8e72-275b8de68a20" />
+
+
 ### Content Settings
 - **Default Post Type** - Post type for generated content (post, page, or custom)
 - **Default Post Status** - Status for new content:
@@ -110,6 +113,9 @@ git clone https://github.com/yourusername/llm-url-solution.git
 - **Include Examples** - Add practical examples to content
 - **Include Code** - Include code snippets when relevant
 
+<img width="683" alt="image" src="https://github.com/user-attachments/assets/cfba8548-dbea-40de-ba6f-b17c97655445" />
+
+
 ### Safety Settings
 - **Auto-Generate Content** - Enable automatic content generation on 404 detection
 - **Hourly Rate Limit** - Max generations per hour (default: 10)
@@ -120,10 +126,16 @@ git clone https://github.com/yourusername/llm-url-solution.git
   - Media files (.jpg, .png, .pdf)
 - **Minimum Confidence Score** (0.0-1.0) - Only generate content above this threshold (default: 0.3)
 
+<img width="920" alt="image" src="https://github.com/user-attachments/assets/48e911cc-311f-4a3d-9958-b0b41027fc45" />
+
+
 ### Advanced Settings
 - **Custom Referrer Patterns** - Additional AI chatbot domains to monitor
 - **Custom AI Prompt** - Additional instructions for content generation
 - **Enable Debug Mode** - Log detailed information for troubleshooting
+
+<img width="1001" alt="image" src="https://github.com/user-attachments/assets/40ec1b7e-ccb6-4a23-ba97-bf54b4a6cae7" />
+
 
 ## ⚡ Automatic Updates
 To enable automatic updates, you can use the [GitHub Updater](https://github.com/a8cteam51/github-updater) plugin. Once installed, it will automatically manage updates for LLM URL Solution directly from the official GitHub repository, ensuring you always have the latest features and security fixes.
@@ -135,6 +147,9 @@ To enable automatic updates, you can use the [GitHub Updater](https://github.com
 3. **Generation**: Content can be generated automatically or manually through the admin interface
 4. **Smart Post Type Detection**: The plugin analyzes the URL structure to determine the appropriate post type
 5. **Publishing**: Generated content is created as a draft (or published, based on settings) with proper SEO optimization
+
+<img width="1348" alt="image" src="https://github.com/user-attachments/assets/6461ec0a-45da-422d-9846-a32d037df51f" />
+
 
 ### Intelligent Post Type Detection
 
