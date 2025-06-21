@@ -75,6 +75,38 @@ To enable automatic updates, install the [GitHub Updater](https://github.com/a8c
 * An API key from OpenAI or Anthropic (Claude)
 * SSL certificate (recommended for API security)
 
+== Settings ==
+
+The plugin provides comprehensive settings to customize content generation:
+
+= API Settings =
+* **OpenAI API Key** - Your OpenAI API key for GPT models
+* **Claude API Key** - Your Anthropic API key for Claude models
+* **AI Model** - Choose between GPT-4, GPT-3.5 Turbo, or Claude 3 Opus
+* **Temperature** (0.0-1.0) - Controls creativity vs consistency (default: 0.7)
+* **Max Tokens** - Maximum length of generated content (default: 1500)
+
+= Content Settings =
+* **Default Post Type** - Choose post, page, or any custom post type
+* **Default Post Status** - Draft, Published, Pending, or Private
+* **Auto-Categorize** - Automatically assign categories based on URL structure
+* **Auto-Tag** - Generate and assign relevant tags
+* **Content Length** - Set minimum (default: 800) and maximum (default: 1500) word counts
+* **Content Tone** - Professional, casual, or technical writing style
+* **Include Examples** - Add practical examples to generated content
+* **Include Code** - Include code snippets when relevant
+
+= Safety Settings =
+* **Auto-Generate Content** - Enable automatic content generation on 404 detection
+* **Rate Limits** - Set hourly (default: 10) and daily (default: 50) generation limits
+* **URL Blacklist Patterns** - Exclude specific URL patterns from generation
+* **Minimum Confidence Score** - Only generate content above this threshold (default: 0.3)
+
+= Advanced Settings =
+* **Custom Referrer Patterns** - Add additional AI chatbot domains to monitor
+* **Custom AI Prompt** - Add custom instructions for content generation
+* **Enable Debug Mode** - Log detailed information for troubleshooting
+
 == Frequently Asked Questions ==
 
 = Which AI chatbot referrers are supported? =

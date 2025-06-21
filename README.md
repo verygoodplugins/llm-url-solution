@@ -83,6 +83,48 @@ git clone https://github.com/yourusername/llm-url-solution.git
    - Set rate limits (hourly/daily)
    - Configure URL blacklist patterns
 
+## 📋 Available Settings
+
+### API Settings
+- **OpenAI API Key** - Your OpenAI API key for GPT models
+- **Claude API Key** - Your Anthropic API key for Claude models
+- **AI Model** - Choose from:
+  - GPT-4 (Most capable, higher cost)
+  - GPT-3.5 Turbo (Fast and cost-effective)
+  - Claude 3 Opus (Anthropic's most capable model)
+- **Temperature** (0.0-1.0) - Controls creativity vs consistency (default: 0.7)
+- **Max Tokens** - Maximum length of generated content (default: 1500)
+
+### Content Settings
+- **Default Post Type** - Post type for generated content (post, page, or custom)
+- **Default Post Status** - Status for new content:
+  - Draft (recommended for review)
+  - Published
+  - Pending
+  - Private
+- **Auto-Categorize** - Automatically assign categories based on URL structure
+- **Auto-Tag** - Generate and assign relevant tags
+- **Content Min Length** - Minimum word count (default: 800)
+- **Content Max Length** - Maximum word count (default: 1500)
+- **Content Tone** - Writing style (professional, casual, technical)
+- **Include Examples** - Add practical examples to content
+- **Include Code** - Include code snippets when relevant
+
+### Safety Settings
+- **Auto-Generate Content** - Enable automatic content generation on 404 detection
+- **Hourly Rate Limit** - Max generations per hour (default: 10)
+- **Daily Rate Limit** - Max generations per day (default: 50)
+- **URL Blacklist Patterns** - Patterns to exclude (one per line):
+  - Admin pages (wp-admin, wp-login)
+  - System files (.env, .git, config)
+  - Media files (.jpg, .png, .pdf)
+- **Minimum Confidence Score** (0.0-1.0) - Only generate content above this threshold (default: 0.3)
+
+### Advanced Settings
+- **Custom Referrer Patterns** - Additional AI chatbot domains to monitor
+- **Custom AI Prompt** - Additional instructions for content generation
+- **Enable Debug Mode** - Log detailed information for troubleshooting
+
 ## ⚡ Automatic Updates
 To enable automatic updates, you can use the [GitHub Updater](https://github.com/a8cteam51/github-updater) plugin. Once installed, it will automatically manage updates for LLM URL Solution directly from the official GitHub repository, ensuring you always have the latest features and security fixes.
 
