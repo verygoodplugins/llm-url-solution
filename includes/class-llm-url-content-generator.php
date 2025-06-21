@@ -452,21 +452,21 @@ Site context:
 	 * @return   array                  Parsed content array.
 	 */
 	private function parse_ai_response( $response ) {
-		// Try to parse as JSON first
-		$json = json_decode( $response, true );
+		// Find JSON string, which may be wrapped in text and/or a markdown block.
+		$json_string = $response;
+		if ( preg_match( '/```(json)?\s*(\{[\s\S]*\})\s*```/', $response, $matches ) ) {
+			$json_string = $matches[2];
+		} elseif ( preg_match( '/\{[\s\S]*\}/', $response, $matches ) ) {
+			$json_string = $matches[0];
+		}
+
+		// Attempt to decode the extracted string.
+		$json = json_decode( $json_string, true );
 		if ( json_last_error() === JSON_ERROR_NONE && isset( $json['title'] ) && isset( $json['content'] ) ) {
 			return $json;
 		}
 
-		// Fallback: try to extract JSON from the response
-		if ( preg_match( '/\{[\s\S]*\}/', $response, $matches ) ) {
-			$json = json_decode( $matches[0], true );
-			if ( json_last_error() === JSON_ERROR_NONE && isset( $json['title'] ) && isset( $json['content'] ) ) {
-				return $json;
-			}
-		}
-
-		// Last resort: treat entire response as content
+		// Last resort: treat entire response as content.
 		return array(
 			'title'         => __( 'Generated Content', 'llm-url-solution' ),
 			'content'       => $response,
