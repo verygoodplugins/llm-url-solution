@@ -16,7 +16,7 @@
  *
  * @package    LLM_URL_Solution
  * @subpackage LLM_URL_Solution/admin
- * @author     Your Company Name
+ * @author     Very Good Plugins
  */
 class LLM_URL_Admin {
 
@@ -174,6 +174,9 @@ class LLM_URL_Admin {
 	 * @since    1.0.0
 	 */
 	public function register_settings() {
+		// Ensure capabilities are set up
+		$this->ensure_capabilities();
+		
 		// API Settings
 		register_setting( 'llm_url_solution_api_settings', 'llm_url_solution_openai_api_key', array(
 			'type'              => 'string',
@@ -241,6 +244,12 @@ class LLM_URL_Admin {
 		) );
 
 		// Safety Settings
+		register_setting( 'llm_url_solution_safety_settings', 'llm_url_solution_auto_generate', array(
+			'type'              => 'boolean',
+			'sanitize_callback' => 'rest_sanitize_boolean',
+			'default'           => false,
+		) );
+		
 		register_setting( 'llm_url_solution_safety_settings', 'llm_url_solution_rate_limit_hourly', array(
 			'type'              => 'integer',
 			'sanitize_callback' => 'absint',
@@ -289,6 +298,25 @@ class LLM_URL_Admin {
 			'sanitize_callback' => 'rest_sanitize_boolean',
 			'default'           => false,
 		) );
+	}
+
+	/**
+	 * Ensure plugin capabilities are properly set.
+	 *
+	 * @since    1.1.0
+	 */
+	private function ensure_capabilities() {
+		$role = get_role( 'administrator' );
+		if ( $role && ! $role->has_cap( 'manage_llm_url_solution' ) ) {
+			$role->add_cap( 'manage_llm_url_solution' );
+			$role->add_cap( 'approve_llm_url_content' );
+		}
+		
+		// Also add to editor role if desired
+		$editor_role = get_role( 'editor' );
+		if ( $editor_role && ! $editor_role->has_cap( 'approve_llm_url_content' ) ) {
+			$editor_role->add_cap( 'approve_llm_url_content' );
+		}
 	}
 
 	/**
@@ -357,7 +385,7 @@ class LLM_URL_Admin {
 		}
 
 		// Check permissions
-		if ( ! current_user_can( 'approve_llm_url_content' ) ) {
+		if ( ! current_user_can( 'approve_llm_url_content' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( __( 'Insufficient permissions', 'llm-url-solution' ) );
 		}
 
@@ -390,7 +418,7 @@ class LLM_URL_Admin {
 		}
 
 		// Check permissions
-		if ( ! current_user_can( 'manage_llm_url_solution' ) ) {
+		if ( ! current_user_can( 'manage_llm_url_solution' ) && ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( __( 'Insufficient permissions', 'llm-url-solution' ) );
 		}
 

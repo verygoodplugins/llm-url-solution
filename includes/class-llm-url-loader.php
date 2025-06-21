@@ -18,7 +18,7 @@
  *
  * @package    LLM_URL_Solution
  * @subpackage LLM_URL_Solution/includes
- * @author     Your Company Name
+ * @author     Very Good Plugins
  */
 class LLM_URL_Loader {
 

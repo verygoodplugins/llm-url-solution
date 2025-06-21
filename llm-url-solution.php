@@ -1,17 +1,18 @@
 <?php
 /**
  * Plugin Name:       LLM URL Solution
- * Plugin URI:        https://example.com/llm-url-solution
+ * Plugin URI:        https://github.com/verygoodplugins/llm-url-solution/
  * Description:       Automatically generates content for 404 URLs that originate from AI chatbot searches, creating SEO-optimized blog posts or documentation pages.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
- * Author:            Your Company Name
- * Author URI:        https://example.com
+ * Author:            Very Good Plugins
+ * Author URI:        https://verygoodplugins.com
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       llm-url-solution
  * Domain Path:       /languages
+ * GitHub Plugin URI: https://github.com/verygoodplugins/llm-url-solution
  *
  * @package LLM_URL_Solution
  */
@@ -25,7 +26,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Current plugin version.
  * Start at version 1.0.0 and use SemVer - https://semver.org
  */
-define( 'LLM_URL_SOLUTION_VERSION', '1.0.0' );
+define( 'LLM_URL_SOLUTION_VERSION', '1.1.0' );
 
 /**
  * Plugin constants

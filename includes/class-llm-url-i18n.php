@@ -21,7 +21,7 @@
  * @since      1.0.0
  * @package    LLM_URL_Solution
  * @subpackage LLM_URL_Solution/includes
- * @author     Your Company Name
+ * @author     Very Good Plugins
  */
 class LLM_URL_i18n {
 

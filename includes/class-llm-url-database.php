@@ -17,7 +17,7 @@
  *
  * @package    LLM_URL_Solution
  * @subpackage LLM_URL_Solution/includes
- * @author     Your Company Name
+ * @author     Very Good Plugins
  */
 class LLM_URL_Database {
 
@@ -62,6 +62,8 @@ class LLM_URL_Database {
 			'ip_address'    => ! empty( $data['ip_address'] ) ? sanitize_text_field( $data['ip_address'] ) : '',
 			'user_agent'    => ! empty( $data['user_agent'] ) ? sanitize_text_field( $data['user_agent'] ) : '',
 			'timestamp'     => current_time( 'mysql' ),
+			'confidence_score' => isset( $data['confidence_score'] ) ? floatval( $data['confidence_score'] ) : null,
+			'detected_post_type' => isset( $data['detected_post_type'] ) ? sanitize_text_field( $data['detected_post_type'] ) : null,
 		);
 
 		// Check if this URL was already logged recently (within last hour)
@@ -82,7 +84,7 @@ class LLM_URL_Database {
 		return $wpdb->insert(
 			$this->tables['404_logs'],
 			$insert_data,
-			array( '%s', '%s', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%s' )
 		);
 	}
 

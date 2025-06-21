@@ -32,6 +32,43 @@ if ( isset( $_GET['s'] ) && ! empty( $_GET['s'] ) ) {
 
 // Get logs
 $db = new LLM_URL_Database();
+
+// Handle flush all logs action
+if ( isset( $_POST['flush_all_logs'] ) && isset( $_POST['llm_url_flush_nonce'] ) ) {
+	if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['llm_url_flush_nonce'] ) ), 'llm_url_flush_all_logs' ) ) {
+		wp_die( esc_html__( 'Security check failed', 'llm-url-solution' ) );
+	}
+	
+	// Check for capability or administrator role
+	if ( current_user_can( 'manage_llm_url_solution' ) || current_user_can( 'manage_options' ) ) {
+		global $wpdb;
+		$table = $wpdb->prefix . 'llm_url_404_logs';
+		$result = $wpdb->query( "TRUNCATE TABLE $table" );
+		
+		if ( $result !== false ) {
+			echo '<div class="notice notice-success"><p>' . esc_html__( 'All logs have been flushed successfully.', 'llm-url-solution' ) . '</p></div>';
+		} else {
+			echo '<div class="notice notice-error"><p>' . esc_html__( 'Error flushing logs. Database error: ', 'llm-url-solution' ) . $wpdb->last_error . '</p></div>';
+		}
+		
+		// Reset logs after flush
+		$logs = array();
+		$total_items = 0;
+		$total_pages = 0;
+	} else {
+		// Debug information
+		$current_user = wp_get_current_user();
+		echo '<div class="notice notice-error"><p>';
+		echo esc_html__( 'Insufficient permissions to flush logs.', 'llm-url-solution' ) . '<br>';
+		echo 'Debug Info:<br>';
+		echo 'User: ' . esc_html( $current_user->user_login ) . '<br>';
+		echo 'Roles: ' . esc_html( implode( ', ', $current_user->roles ) ) . '<br>';
+		echo 'Has manage_llm_url_solution: ' . ( current_user_can( 'manage_llm_url_solution' ) ? 'Yes' : 'No' ) . '<br>';
+		echo 'Has manage_options: ' . ( current_user_can( 'manage_options' ) ? 'Yes' : 'No' );
+		echo '</p></div>';
+	}
+}
+
 $results = $db->get_404_logs( $current_page, $per_page, $filters );
 $logs = $results['logs'];
 $total_items = $results['total'];
@@ -43,32 +80,34 @@ if ( isset( $_POST['action'] ) && $_POST['action'] !== '-1' ) {
 		wp_die( esc_html__( 'Security check failed', 'llm-url-solution' ) );
 	}
 	
-	if ( current_user_can( 'manage_llm_url_solution' ) && isset( $_POST['log_ids'] ) && is_array( $_POST['log_ids'] ) ) {
-		$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
-		$log_ids = array_map( 'absint', $_POST['log_ids'] );
-		
-		switch ( $action ) {
-			case 'delete':
-				global $wpdb;
-				$table = $wpdb->prefix . 'llm_url_404_logs';
-				$placeholders = implode( ',', array_fill( 0, count( $log_ids ), '%d' ) );
-				$wpdb->query( $wpdb->prepare( "DELETE FROM $table WHERE id IN ($placeholders)", $log_ids ) );
-				echo '<div class="notice notice-success"><p>' . esc_html__( 'Selected logs deleted successfully.', 'llm-url-solution' ) . '</p></div>';
-				break;
-				
-			case 'mark_processed':
-				foreach ( $log_ids as $log_id ) {
-					$db->mark_as_processed( $log_id );
-				}
-				echo '<div class="notice notice-success"><p>' . esc_html__( 'Selected logs marked as processed.', 'llm-url-solution' ) . '</p></div>';
-				break;
+	if ( current_user_can( 'manage_llm_url_solution' ) || current_user_can( 'manage_options' ) ) {
+		if ( isset( $_POST['log_ids'] ) && is_array( $_POST['log_ids'] ) ) {
+			$action = sanitize_text_field( wp_unslash( $_POST['action'] ) );
+			$log_ids = array_map( 'absint', $_POST['log_ids'] );
+			
+			switch ( $action ) {
+				case 'delete':
+					global $wpdb;
+					$table = $wpdb->prefix . 'llm_url_404_logs';
+					$placeholders = implode( ',', array_fill( 0, count( $log_ids ), '%d' ) );
+					$wpdb->query( $wpdb->prepare( "DELETE FROM $table WHERE id IN ($placeholders)", $log_ids ) );
+					echo '<div class="notice notice-success"><p>' . esc_html__( 'Selected logs deleted successfully.', 'llm-url-solution' ) . '</p></div>';
+					break;
+					
+				case 'mark_processed':
+					foreach ( $log_ids as $log_id ) {
+						$db->mark_as_processed( $log_id );
+					}
+					echo '<div class="notice notice-success"><p>' . esc_html__( 'Selected logs marked as processed.', 'llm-url-solution' ) . '</p></div>';
+					break;
+			}
+			
+			// Refresh logs
+			$results = $db->get_404_logs( $current_page, $per_page, $filters );
+			$logs = $results['logs'];
+			$total_items = $results['total'];
+			$total_pages = ceil( $total_items / $per_page );
 		}
-		
-		// Refresh logs
-		$results = $db->get_404_logs( $current_page, $per_page, $filters );
-		$logs = $results['logs'];
-		$total_items = $results['total'];
-		$total_pages = ceil( $total_items / $per_page );
 	}
 }
 ?>
@@ -98,7 +137,14 @@ if ( isset( $_POST['action'] ) && $_POST['action'] !== '-1' ) {
 			</div>
 			
 			<div class="alignright">
-				<p class="search-box">
+				<form method="post" action="" style="display: inline-block; margin-right: 10px;">
+					<?php wp_nonce_field( 'llm_url_flush_all_logs', 'llm_url_flush_nonce' ); ?>
+					<button type="submit" name="flush_all_logs" class="button button-secondary" onclick="return confirm('<?php echo esc_js( __( 'Are you sure you want to delete all logs? This action cannot be undone.', 'llm-url-solution' ) ); ?>');">
+						<span class="dashicons dashicons-trash" style="vertical-align: middle; margin-top: -2px;"></span> <?php esc_html_e( 'Flush All Logs', 'llm-url-solution' ); ?>
+					</button>
+				</form>
+				
+				<p class="search-box" style="display: inline-block;">
 					<label class="screen-reader-text" for="log-search-input"><?php esc_html_e( 'Search Logs:', 'llm-url-solution' ); ?></label>
 					<input type="search" id="log-search-input" name="s" value="<?php echo esc_attr( $filters['search'] ?? '' ); ?>" />
 					<?php submit_button( __( 'Search Logs', 'llm-url-solution' ), 'secondary', false, false, array( 'id' => 'search-submit' ) ); ?>
@@ -162,6 +208,7 @@ if ( isset( $_POST['action'] ) && $_POST['action'] !== '-1' ) {
 					<th scope="col" class="manage-column"><?php esc_html_e( 'URL', 'llm-url-solution' ); ?></th>
 					<th scope="col" class="manage-column"><?php esc_html_e( 'Referrer', 'llm-url-solution' ); ?></th>
 					<th scope="col" class="manage-column"><?php esc_html_e( 'Date', 'llm-url-solution' ); ?></th>
+					<th scope="col" class="manage-column"><?php esc_html_e( 'Analysis', 'llm-url-solution' ); ?></th>
 					<th scope="col" class="manage-column"><?php esc_html_e( 'Status', 'llm-url-solution' ); ?></th>
 					<th scope="col" class="manage-column"><?php esc_html_e( 'Actions', 'llm-url-solution' ); ?></th>
 				</tr>
@@ -198,6 +245,16 @@ if ( isset( $_POST['action'] ) && $_POST['action'] !== '-1' ) {
 								<small><?php echo esc_html( human_time_diff( strtotime( $log->timestamp ), current_time( 'timestamp' ) ) ); ?> <?php esc_html_e( 'ago', 'llm-url-solution' ); ?></small>
 							</td>
 							<td>
+								<?php if ( ! empty( $log->confidence_score ) ) : ?>
+									<strong><?php esc_html_e( 'Confidence:', 'llm-url-solution' ); ?></strong> <?php echo esc_html( number_format( $log->confidence_score * 100, 1 ) ); ?>%<br>
+								<?php endif; ?>
+								<?php if ( ! empty( $log->detected_post_type ) ) : ?>
+									<strong><?php esc_html_e( 'Type:', 'llm-url-solution' ); ?></strong> <?php echo esc_html( $log->detected_post_type ); ?>
+								<?php else : ?>
+									<strong><?php esc_html_e( 'Type:', 'llm-url-solution' ); ?></strong> <em><?php esc_html_e( 'Not detected', 'llm-url-solution' ); ?></em>
+								<?php endif; ?>
+							</td>
+							<td>
 								<?php if ( $log->processed ) : ?>
 									<span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span> <?php esc_html_e( 'Processed', 'llm-url-solution' ); ?>
 								<?php else : ?>
@@ -223,7 +280,7 @@ if ( isset( $_POST['action'] ) && $_POST['action'] !== '-1' ) {
 					<?php endforeach; ?>
 				<?php else : ?>
 					<tr>
-						<td colspan="6"><?php esc_html_e( 'No logs found.', 'llm-url-solution' ); ?></td>
+						<td colspan="7"><?php esc_html_e( 'No logs found.', 'llm-url-solution' ); ?></td>
 					</tr>
 				<?php endif; ?>
 			</tbody>
@@ -235,6 +292,7 @@ if ( isset( $_POST['action'] ) && $_POST['action'] !== '-1' ) {
 					<th scope="col" class="manage-column"><?php esc_html_e( 'URL', 'llm-url-solution' ); ?></th>
 					<th scope="col" class="manage-column"><?php esc_html_e( 'Referrer', 'llm-url-solution' ); ?></th>
 					<th scope="col" class="manage-column"><?php esc_html_e( 'Date', 'llm-url-solution' ); ?></th>
+					<th scope="col" class="manage-column"><?php esc_html_e( 'Analysis', 'llm-url-solution' ); ?></th>
 					<th scope="col" class="manage-column"><?php esc_html_e( 'Status', 'llm-url-solution' ); ?></th>
 					<th scope="col" class="manage-column"><?php esc_html_e( 'Actions', 'llm-url-solution' ); ?></th>
 				</tr>

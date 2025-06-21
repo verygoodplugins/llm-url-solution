@@ -4,7 +4,7 @@ Tags: 404, content generation, AI, ChatGPT, SEO, automation
 Requires at least: 5.8
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,8 +21,9 @@ When AI chatbots reference URLs on your site that don't exist, this plugin captu
 * **Automatic 404 Detection**: Monitors and logs 404 errors from AI chatbot referrers
 * **Smart URL Analysis**: Extracts keywords and intent from requested URLs
 * **AI-Powered Content Generation**: Creates relevant content using OpenAI GPT or Claude APIs
+* **Intelligent Post Type Detection**: Automatically determines the appropriate post type based on URL taxonomy
 * **SEO Optimization**: Generates content with proper structure, meta descriptions, and keywords
-* **Content Control**: Manual approval workflow with customizable generation settings
+* **Content Control**: Manual or automatic approval workflow with customizable generation settings
 * **Rate Limiting**: Prevents abuse with hourly and daily generation limits
 * **Blacklist Support**: Exclude specific URL patterns from content generation
 * **Multi-AI Support**: Works with OpenAI GPT-4, GPT-3.5, and Claude models
@@ -32,9 +33,20 @@ When AI chatbots reference URLs on your site that don't exist, this plugin captu
 1. A user searches for your content on ChatGPT or another AI chatbot
 2. The chatbot references a URL on your site that doesn't exist
 3. When clicked, the plugin detects the 404 error and logs it
-4. You can review logged URLs and generate content with one click
-5. The AI creates relevant, high-quality content based on the URL intent
-6. Content is saved as a draft for your review before publishing
+4. Content can be generated automatically or manually with one click
+5. The plugin intelligently detects the appropriate post type based on URL structure
+6. The AI creates relevant, high-quality content based on the URL intent
+7. Content is saved as a draft (or published) for your review
+
+= Intelligent Post Type Detection =
+
+The plugin uses a smart algorithm to detect the appropriate post type:
+* Checks if the first URL segment matches any taxonomy term
+* If not found, checks the second URL segment
+* Automatically creates content in the post type associated with the matched taxonomy
+* Falls back to the default post type if no match is found
+
+This means the plugin adapts to your site's structure without any hardcoded rules!
 
 = Use Cases =
 
@@ -113,6 +125,16 @@ The plugin enforces hourly and daily rate limits to prevent abuse and control co
 
 == Changelog ==
 
+= 1.1.0 =
+* Added automatic content generation option - content can now be generated automatically when 404s are detected
+* Implemented intelligent post type detection based on URL taxonomy structure
+* Added support for custom post types without hardcoding
+* Improved URL analysis algorithm for better content matching
+* Enhanced settings interface with new auto-generation toggle
+* Added smart taxonomy-based routing for generated content
+* Improved error handling and user feedback
+* Bug fixes and performance improvements
+
 = 1.0.0 =
 * Initial release
 * Core 404 detection functionality
@@ -123,6 +145,9 @@ The plugin enforces hourly and daily rate limits to prevent abuse and control co
 * Rate limiting and safety controls
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+New automatic content generation feature and intelligent post type detection! The plugin now adapts to your site's taxonomy structure automatically.
 
 = 1.0.0 =
 Initial release of LLM URL Solution. Start converting 404 errors into valuable content!
@@ -143,6 +168,6 @@ For support, feature requests, or bug reports, please visit our support forum or
 
 == Credits ==
 
-* Developed by [Your Company Name]
+* Developed by [Very Good Plugins]
 * Uses OpenAI GPT and Anthropic Claude APIs
 * Built with WordPress coding standards 

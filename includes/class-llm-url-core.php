@@ -11,7 +11,7 @@
  * @since      1.0.0
  * @package    LLM_URL_Solution
  * @subpackage LLM_URL_Solution/includes
- * @author     Your Company Name
+ * @author     Very Good Plugins
  */
 class LLM_URL_Core {
 
@@ -56,6 +56,9 @@ class LLM_URL_Core {
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
+		
+		// Check for database upgrades
+		$this->maybe_upgrade_database();
 	}
 
 	/**
@@ -151,6 +154,16 @@ class LLM_URL_Core {
 		// Hook into WordPress 404 handling
 		$this->loader->add_action( 'wp', $plugin_detector, 'detect_404_with_ai_referrer' );
 		$this->loader->add_action( 'template_redirect', $plugin_detector, 'maybe_generate_content' );
+	}
+
+	/**
+	 * Check and perform database upgrades if needed.
+	 *
+	 * @since    1.1.0
+	 */
+	private function maybe_upgrade_database() {
+		require_once LLM_URL_SOLUTION_PLUGIN_DIR . 'includes/class-llm-url-activator.php';
+		LLM_URL_Activator::maybe_upgrade_database();
 	}
 
 	/**

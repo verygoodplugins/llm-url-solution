@@ -17,7 +17,7 @@
  * @since      1.0.0
  * @package    LLM_URL_Solution
  * @subpackage LLM_URL_Solution/includes
- * @author     Your Company Name
+ * @author     Very Good Plugins
  */
 class LLM_URL_Activator {
 
@@ -59,6 +59,8 @@ class LLM_URL_Activator {
 			processed tinyint(1) DEFAULT 0,
 			content_generated tinyint(1) DEFAULT 0,
 			post_id bigint(20) unsigned DEFAULT NULL,
+			confidence_score float DEFAULT NULL,
+			detected_post_type varchar(50) DEFAULT NULL,
 			PRIMARY KEY (id),
 			KEY idx_slug (url_slug),
 			KEY idx_processed (processed),
@@ -82,7 +84,40 @@ class LLM_URL_Activator {
 		dbDelta( $sql_settings );
 
 		// Store the database version
-		add_option( 'llm_url_solution_db_version', '1.0.0' );
+		add_option( 'llm_url_solution_db_version', '1.1.0' );
+		
+		// Run upgrade if needed
+		self::maybe_upgrade_database();
+	}
+
+	/**
+	 * Check and perform database upgrades if needed.
+	 *
+	 * @since    1.1.0
+	 */
+	public static function maybe_upgrade_database() {
+		$current_db_version = get_option( 'llm_url_solution_db_version', '1.0.0' );
+		
+		// Upgrade from 1.0.0 to 1.1.0
+		if ( version_compare( $current_db_version, '1.1.0', '<' ) ) {
+			global $wpdb;
+			$table_404_logs = $wpdb->prefix . 'llm_url_404_logs';
+			
+			// Add confidence_score column if it doesn't exist
+			$column_exists = $wpdb->get_results( "SHOW COLUMNS FROM $table_404_logs LIKE 'confidence_score'" );
+			if ( empty( $column_exists ) ) {
+				$wpdb->query( "ALTER TABLE $table_404_logs ADD COLUMN confidence_score float DEFAULT NULL AFTER post_id" );
+			}
+			
+			// Add detected_post_type column if it doesn't exist
+			$column_exists = $wpdb->get_results( "SHOW COLUMNS FROM $table_404_logs LIKE 'detected_post_type'" );
+			if ( empty( $column_exists ) ) {
+				$wpdb->query( "ALTER TABLE $table_404_logs ADD COLUMN detected_post_type varchar(50) DEFAULT NULL AFTER confidence_score" );
+			}
+			
+			// Update database version
+			update_option( 'llm_url_solution_db_version', '1.1.0' );
+		}
 	}
 
 	/**

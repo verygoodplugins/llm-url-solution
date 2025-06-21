@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Your Company Name
+# Copyright (C) 2024 Very Good Plugins
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
@@ -27,7 +27,7 @@ msgid "Automatically generates content for 404 URLs that originate from AI chatb
 msgstr ""
 
 #. Author of the plugin
-msgid "Your Company Name"
+msgid "Very Good Plugins"
 msgstr ""
 
 #. Author URI of the plugin

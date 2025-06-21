@@ -16,7 +16,7 @@
  *
  * @package    LLM_URL_Solution
  * @subpackage LLM_URL_Solution/includes
- * @author     Your Company Name
+ * @author     Very Good Plugins
  */
 class LLM_URL_Content_Generator {
 
@@ -466,13 +466,16 @@ Site context:
 	 * @return   int|WP_Error           Post ID or error.
 	 */
 	private function create_post( $content, $analysis, $log ) {
+		// Detect post type based on URL structure
+		$detected_post_type = $this->detect_post_type_from_url( $log->requested_url );
+		
 		// Prepare post data
 		$post_data = array(
 			'post_title'   => sanitize_text_field( $content['title'] ),
 			'post_content' => wp_kses_post( $content['content'] ),
 			'post_excerpt' => sanitize_text_field( $content['excerpt'] ?? '' ),
 			'post_status'  => get_option( 'llm_url_solution_default_post_status', 'draft' ),
-			'post_type'    => get_option( 'llm_url_solution_default_post_type', 'post' ),
+			'post_type'    => $detected_post_type ?: get_option( 'llm_url_solution_default_post_type', 'post' ),
 			'post_author'  => get_current_user_id() ?: 1,
 			'meta_input'   => array(
 				'_llm_url_solution_generated'     => true,
@@ -509,6 +512,75 @@ Site context:
 		}
 
 		return $post_id;
+	}
+
+	/**
+	 * Detect post type from URL structure based on taxonomy terms.
+	 *
+	 * @since    1.0.0
+	 * @param    string    $url    The requested URL.
+	 * @return   string|null       The detected post type or null.
+	 */
+	private function detect_post_type_from_url( $url ) {
+		// Parse the URL to get the path
+		$parsed = wp_parse_url( $url );
+		$path = isset( $parsed['path'] ) ? trim( $parsed['path'], '/' ) : '';
+		
+		// Split the path into segments
+		$segments = explode( '/', $path );
+		
+		if ( empty( $segments ) ) {
+			return null;
+		}
+		
+		// Check first segment
+		if ( isset( $segments[0] ) && ! empty( $segments[0] ) ) {
+			$post_type = $this->check_taxonomy_term_for_post_type( $segments[0] );
+			if ( $post_type ) {
+				return $post_type;
+			}
+		}
+		
+		// Check second segment if first didn't match
+		if ( isset( $segments[1] ) && ! empty( $segments[1] ) ) {
+			$post_type = $this->check_taxonomy_term_for_post_type( $segments[1] );
+			if ( $post_type ) {
+				return $post_type;
+			}
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Check if a slug is a taxonomy term and return associated post type.
+	 *
+	 * @since    1.0.0
+	 * @param    string    $slug    The slug to check.
+	 * @return   string|null        The associated post type or null.
+	 */
+	private function check_taxonomy_term_for_post_type( $slug ) {
+		// Get all public taxonomies
+		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
+		
+		foreach ( $taxonomies as $taxonomy ) {
+			// Check if term exists in this taxonomy
+			$term = get_term_by( 'slug', $slug, $taxonomy->name );
+			
+			if ( $term ) {
+				// Get post types associated with this taxonomy
+				$post_types = $taxonomy->object_type;
+				
+				// Return the first non-attachment post type
+				foreach ( $post_types as $post_type ) {
+					if ( $post_type !== 'attachment' ) {
+						return $post_type;
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 
 	/**

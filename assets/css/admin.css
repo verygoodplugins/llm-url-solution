@@ -131,6 +131,25 @@
 	margin: 2px;
 }
 
+/* Flush All Logs Button */
+.llm-url-flush-all-logs {
+	margin-right: 10px;
+}
+
+.llm-url-flush-all-logs .dashicons {
+	margin-right: 3px;
+}
+
+/* Align filter and action buttons */
+.tablenav .alignright form {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.tablenav .alignright .search-box {
+	margin: 0;
+}
+
 /* Responsive Design */
 @media screen and (max-width: 782px) {
 	.llm-url-stat-boxes {

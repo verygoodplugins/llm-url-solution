@@ -17,7 +17,7 @@
  *
  * @package    LLM_URL_Solution
  * @subpackage LLM_URL_Solution/includes
- * @author     Your Company Name
+ * @author     Very Good Plugins
  */
 class LLM_URL_404_Detector {
 
@@ -106,6 +106,17 @@ class LLM_URL_404_Detector {
 			return;
 		}
 
+		// Analyze URL for confidence and post type
+		require_once LLM_URL_SOLUTION_PLUGIN_DIR . 'includes/class-llm-url-analyzer.php';
+		require_once LLM_URL_SOLUTION_PLUGIN_DIR . 'includes/class-llm-url-content-generator.php';
+		
+		$analyzer = new LLM_URL_Analyzer();
+		$analysis = $analyzer->analyze_url( $url_slug );
+		
+		// Detect post type
+		$generator = new LLM_URL_Content_Generator();
+		$detected_post_type = $this->detect_post_type_from_url( $requested_url );
+
 		// Prepare data for logging
 		$log_data = array(
 			'requested_url' => $requested_url,
@@ -113,6 +124,8 @@ class LLM_URL_404_Detector {
 			'referrer'      => $referrer,
 			'ip_address'    => $this->get_client_ip(),
 			'user_agent'    => isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
+			'confidence_score' => $analysis['confidence'],
+			'detected_post_type' => $detected_post_type,
 		);
 
 		// Log the 404
@@ -282,6 +295,75 @@ class LLM_URL_404_Detector {
 
 		// Schedule content generation
 		wp_schedule_single_event( time() + 10, 'llm_url_solution_generate_content', array( $log_id ) );
+	}
+
+	/**
+	 * Detect post type from URL structure based on taxonomy terms.
+	 *
+	 * @since    1.1.0
+	 * @param    string    $url    The requested URL.
+	 * @return   string|null       The detected post type or null.
+	 */
+	private function detect_post_type_from_url( $url ) {
+		// Parse the URL to get the path
+		$parsed = wp_parse_url( $url );
+		$path = isset( $parsed['path'] ) ? trim( $parsed['path'], '/' ) : '';
+		
+		// Split the path into segments
+		$segments = explode( '/', $path );
+		
+		if ( empty( $segments ) ) {
+			return null;
+		}
+		
+		// Check first segment
+		if ( isset( $segments[0] ) && ! empty( $segments[0] ) ) {
+			$post_type = $this->check_taxonomy_term_for_post_type( $segments[0] );
+			if ( $post_type ) {
+				return $post_type;
+			}
+		}
+		
+		// Check second segment if first didn't match
+		if ( isset( $segments[1] ) && ! empty( $segments[1] ) ) {
+			$post_type = $this->check_taxonomy_term_for_post_type( $segments[1] );
+			if ( $post_type ) {
+				return $post_type;
+			}
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Check if a slug is a taxonomy term and return associated post type.
+	 *
+	 * @since    1.1.0
+	 * @param    string    $slug    The slug to check.
+	 * @return   string|null        The associated post type or null.
+	 */
+	private function check_taxonomy_term_for_post_type( $slug ) {
+		// Get all public taxonomies
+		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
+		
+		foreach ( $taxonomies as $taxonomy ) {
+			// Check if term exists in this taxonomy
+			$term = get_term_by( 'slug', $slug, $taxonomy->name );
+			
+			if ( $term ) {
+				// Get post types associated with this taxonomy
+				$post_types = $taxonomy->object_type;
+				
+				// Return the first non-attachment post type
+				foreach ( $post_types as $post_type ) {
+					if ( $post_type !== 'attachment' ) {
+						return $post_type;
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 
 	/**

@@ -185,6 +185,17 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['ta
 				?>
 				<table class="form-table">
 					<tr>
+						<th scope="row"><?php esc_html_e( 'Auto-Generate Content', 'llm-url-solution' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="llm_url_solution_auto_generate" value="1" <?php checked( get_option( 'llm_url_solution_auto_generate', false ) ); ?> />
+								<?php esc_html_e( 'Automatically generate content when 404 errors are detected from AI chatbots', 'llm-url-solution' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'When enabled, content will be generated automatically without manual approval. Use with caution.', 'llm-url-solution' ); ?></p>
+						</td>
+					</tr>
+					
+					<tr>
 						<th scope="row">
 							<label for="llm_url_solution_rate_limit_hourly"><?php esc_html_e( 'Hourly Rate Limit', 'llm-url-solution' ); ?></label>
 						</th>
