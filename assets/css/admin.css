@@ -1,0 +1,225 @@
+/**
+ * Admin styles for LLM URL Solution
+ *
+ * @package LLM_URL_Solution
+ */
+
+/* Dashboard Statistics */
+.llm-url-stat-boxes {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 20px;
+	margin: 20px 0;
+}
+
+.llm-url-stat-box {
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	padding: 20px;
+	text-align: center;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.llm-url-stat-box h3 {
+	margin: 0 0 10px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #23282d;
+}
+
+.llm-url-stat-number {
+	font-size: 32px;
+	font-weight: 400;
+	line-height: 1.3;
+	margin: 0;
+	color: #0073aa;
+}
+
+/* Rate Limits Section */
+.llm-url-rate-limits {
+	margin: 30px 0;
+}
+
+.llm-url-rate-limits .notice {
+	margin: 10px 0;
+}
+
+/* Recent 404s Section */
+.llm-url-recent-404s {
+	margin: 30px 0;
+}
+
+.llm-url-recent-404s table {
+	margin-top: 10px;
+}
+
+/* Quick Actions Section */
+.llm-url-quick-actions {
+	margin: 30px 0;
+	padding: 20px;
+	background: #f1f1f1;
+	border-left: 4px solid #0073aa;
+}
+
+/* Loading States */
+.llm-url-loading {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.llm-url-spinner {
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	border: 3px solid #f3f3f3;
+	border-top: 3px solid #0073aa;
+	border-radius: 50%;
+	animation: llm-url-spin 1s linear infinite;
+	vertical-align: middle;
+	margin-left: 5px;
+}
+
+@keyframes llm-url-spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+/* Settings Page */
+.llm-url-settings-section {
+	margin: 20px 0;
+}
+
+.form-table textarea {
+	width: 100%;
+	max-width: 500px;
+}
+
+/* Logs Page */
+.llm-url-logs-filters {
+	margin: 20px 0;
+}
+
+.llm-url-logs-filters select {
+	margin-right: 5px;
+}
+
+/* Status Indicators */
+.dashicons-yes-alt {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+}
+
+.dashicons-marker {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+}
+
+.dashicons-media-document {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+}
+
+/* Buttons */
+.llm-url-generate-content,
+.llm-url-delete-log {
+	margin: 2px;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 782px) {
+	.llm-url-stat-boxes {
+		grid-template-columns: 1fr;
+	}
+	
+	.form-table textarea {
+		width: 100%;
+	}
+	
+	.wp-list-table {
+		font-size: 12px;
+	}
+	
+	.button-small {
+		font-size: 11px;
+		padding: 0 8px;
+		line-height: 22px;
+		height: 24px;
+	}
+}
+
+/* Notices */
+.llm-url-notice {
+	padding: 12px;
+	margin: 5px 0 15px;
+	border-left-width: 4px;
+	border-left-style: solid;
+}
+
+.llm-url-notice-success {
+	border-left-color: #46b450;
+	background: #ecf7ed;
+}
+
+.llm-url-notice-error {
+	border-left-color: #dc3232;
+	background: #fbeaea;
+}
+
+.llm-url-notice-warning {
+	border-left-color: #ffb900;
+	background: #fff8e5;
+}
+
+.llm-url-notice-info {
+	border-left-color: #00a0d2;
+	background: #e5f5fa;
+}
+
+/* Modal/Overlay for content generation */
+.llm-url-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 100000;
+	display: none;
+}
+
+.llm-url-modal {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background: #fff;
+	padding: 30px;
+	border-radius: 3px;
+	box-shadow: 0 3px 30px rgba(0, 0, 0, 0.2);
+	max-width: 500px;
+	width: 90%;
+	z-index: 100001;
+}
+
+.llm-url-modal h3 {
+	margin-top: 0;
+}
+
+.llm-url-modal-content {
+	margin: 20px 0;
+}
+
+.llm-url-modal-actions {
+	text-align: right;
+	margin-top: 20px;
+}
+
+.llm-url-modal-actions .button {
+	margin-left: 10px;
+} 

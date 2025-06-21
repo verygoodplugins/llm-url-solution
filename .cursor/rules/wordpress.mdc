@@ -1,0 +1,86 @@
+---
+description: 
+globs: *.php
+alwaysApply: false
+---
+# WordPress Development Rules for LLM URL Solution
+
+## Plugin Overview
+LLM URL Solution is a WordPress plugin that automatically generates content for 404 URLs that originate from AI chatbot searches (like ChatGPT, Claude, Bard, etc.), creating SEO-optimized blog posts or documentation pages to address user queries.
+
+## Core Classes
+- `LLM_URL_Core`: Main plugin class that initializes all components
+- `LLM_URL_404_Detector`: Detects 404 errors from AI chatbot referrers
+- `LLM_URL_Analyzer`: Analyzes URL patterns to determine content needs
+- `LLM_URL_Content_Generator`: Generates content using AI APIs
+- `LLM_URL_Database`: Handles database operations
+- `LLM_URL_Admin`: Manages admin interface and settings
+
+## Database Tables
+- `llm_url_404_logs`: Stores detected 404 errors from AI chatbots
+  - Columns: id, requested_url, url_slug, referrer, ip_address, user_agent, timestamp, processed, content_generated, post_id
+
+## WordPress Hooks
+### Actions
+- `wp`: Used to detect 404 errors
+- `template_redirect`: Used for content generation
+- `admin_enqueue_scripts`: Enqueues admin styles and scripts
+- `admin_menu`: Registers admin menu pages
+- `admin_init`: Registers plugin settings
+- `wp_dashboard_setup`: Adds dashboard widget
+- `wp_ajax_llm_url_generate_content`: AJAX handler for content generation
+- `wp_ajax_llm_url_delete_log`: AJAX handler for log deletion
+- `llm_url_solution_404_logged`: Triggered when a 404 is logged
+
+### Filters
+- `llm_url_solution_is_ai_referrer`: Filter to customize AI referrer detection
+- `llm_url_solution_is_blacklisted`: Filter to customize URL blacklisting
+- `plugin_action_links_llm-url-solution/llm-url-solution.php`: Adds settings link to plugins page
+
+## Settings
+### API Settings
+- OpenAI API Key
+- Claude API Key
+- AI Model Selection
+- Temperature
+- Max Tokens
+
+### Content Settings
+- Default Post Type
+- Default Post Status
+- Auto-categorization
+- Auto-tagging
+- Content Length Settings
+
+### Safety Settings
+- Rate Limiting (hourly/daily)
+- URL Blacklist Patterns
+- Custom AI Referrer Patterns
+
+## Admin Pages
+- Dashboard: Overview of 404 statistics and recent logs
+- 404 Logs: Detailed view of all logged 404 errors
+- Settings: Configuration for API, content, and safety settings
+
+## File Structure
+- `llm-url-solution.php`: Main plugin file
+- `includes/`: Core classes
+- `admin/`: Admin pages
+- `assets/`: CSS and JavaScript files
+- `templates/`: Template files for admin views
+
+## Development Guidelines
+1. Follow WordPress coding standards
+2. Use proper sanitization for all input/output
+3. Use prepared statements for database operations
+4. Implement nonce verification for all form submissions
+5. Use capability checks for all admin functions
+6. Prefix all functions, hooks, and database tables with `llm_url_`
+7. Keep all business logic in class methods, not in template files
+8. Use proper internationalization functions for all user-facing strings
+## Common Functions
+- `llm_url_solution_run()`: Initializes the plugin
+- `LLM_URL_404_Detector::detect_404_with_ai_referrer()`: Detects and logs 404 errors
+- `LLM_URL_Content_Generator::generate_content()`: Generates content using AI
+- `LLM_URL_Database::log_404()`: Logs 404 errors to the database
+- `LLM_URL_Admin::display_dashboard_page()`: Renders the admin dashboard 
