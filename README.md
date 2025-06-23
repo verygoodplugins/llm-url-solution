@@ -95,7 +95,7 @@ git clone https://github.com/yourusername/llm-url-solution.git
   - GPT-4 (Most capable, higher cost)
   - GPT-3.5 Turbo (Fast and cost-effective)
   - Claude 3 Opus (Anthropic's most capable model)
-- **Temperature** (0.0-1.0) - Controls creativity vs consistency (default: 0.7)
+- **Temperature** (0.0-2.0) - Controls creativity vs consistency (default: 0.7)
 - **Max Tokens** - Maximum length of generated content (default: 1500)
 
 <img width="724" alt="image" src="https://github.com/user-attachments/assets/c6ef5369-600c-49ac-8e72-275b8de68a20" />
